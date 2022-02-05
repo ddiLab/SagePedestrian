@@ -36,8 +36,8 @@ pedestrian_detection.py changes:
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/pedestrian_detection3.PNG?raw=true)
 
 
-*This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
-
 
 
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/line_result.jpg?raw=true)
+
+*This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
