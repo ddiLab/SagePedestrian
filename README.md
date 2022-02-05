@@ -19,6 +19,7 @@ Open CV Line Drawing Documentation: https://docs.opencv.org/4.x/dc/da5/tutorial_
 Object Detection Tutorial: https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/auto_examples/plot_object_detection_saved_model.html  
 Deep Re-id: https://github.com/KaiyangZhou/deep-person-reid  
 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 plot_object_detection.py changes:
 
@@ -37,6 +38,7 @@ pedestrian_detection.py changes:
 
 
 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/line_result.jpg?raw=true)
 
