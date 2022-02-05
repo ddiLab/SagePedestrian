@@ -10,8 +10,8 @@ Pedestrian tracking with data from NSF Sage Project
 - !!!plot_object_detection.py and pedestrian_detection.py both have dates and directories hard coded, if running a new day these must be changed!!! (temporary)
 - see below for where to change these dates/directories
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Students:** Justin Derus, Wesley Kwiecinski
-**Mentors:** Pratool Bharti, Michael Papka
+**Students:** Justin Derus, Wesley Kwiecinski                   
+**Mentors:** Pratool Bharti, Michael Papka            
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Useful Sources:**  
 Open CV Image Writing: https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html (Python is below c++)  
