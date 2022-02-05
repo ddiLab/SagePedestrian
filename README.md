@@ -1,7 +1,7 @@
 # Sage Pedestrian
 Pedestrian tracking with data from NSF Sage Project
 
-**env.yml:** Conda environment to run scripts
+**env.yml:** Conda environment to run scripts  
 **plot_object_detection.py:** Run the images through the object detection model and spits out an xml file containing the results  
 **pedestrian_detection.py:** Parse xml files and track people in the photo using re-id  
 **plot_lines.py:** Parse .csv output files containing coordinates of people and draw paths on top of an image 
