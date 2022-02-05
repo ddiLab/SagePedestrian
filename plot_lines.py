@@ -104,6 +104,6 @@ def strip_characters(data):
     data = data.replace(' ', '')
     return data
 
-
+# for using the script without pedestrian_detection.py
 if __name__ == '__main__':
     draw_lines("2021-08-31")
