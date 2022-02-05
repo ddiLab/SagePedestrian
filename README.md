@@ -40,4 +40,4 @@ pedestrian_detection.py changes:
 
 
 
-![alt text](https://github.com/ddiLab/sagePedestrian/blob/main/line_result.jpg?raw=true)
+![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/line_result.jpg?raw=true)
