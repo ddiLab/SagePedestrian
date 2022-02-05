@@ -37,3 +37,7 @@ pedestrian_detection.py changes:
 
 
 *This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
+
+
+
+![alt text](https://github.com/ddiLab/sagePedestrian/blob/main/line_result.jpg?raw=true)
