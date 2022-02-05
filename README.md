@@ -20,8 +20,14 @@ Deep Re-id: https://github.com/KaiyangZhou/deep-person-reid
 
 
 plot_object_detection.py changes:
+
+
+
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/plot_object_detection1.PNG?raw=true)
 pedestrian_detection.py changes:
+
+
+
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/pedestrian_detection1.PNG?raw=true)
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/pedestrian_detection2.PNG?raw=true)
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/pedestrian_detection3.PNG?raw=true)
