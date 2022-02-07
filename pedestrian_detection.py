@@ -22,12 +22,7 @@ from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 import sympy
 import pickle
-
-# Path to the xml files created by plot object detection
-# Changed the path to our dates
-PATH_TO_XML_LABELS_DIR = pathlib.Path('/raid/AoT/image_label_xmls/08-31-2021/new_xmls/')
-# Sorts the xml files
-TEST_IMAGE_PATHS = sorted(list(PATH_TO_XML_LABELS_DIR.rglob("*.xml")))
+import time
 
 # CONTAINS MODEL - IF WANTING TO CHANGE MODELS CHANGE THE "model_name" variable
 extractor = FeatureExtractor(model_name='osnet_x1_0', model_path='./model.pth.tar', device='cuda')
@@ -67,6 +62,7 @@ def parse_xml(xml_file):
 # multiple boxes per object, compresses into just one box for the object
 # finds overlap between pictures, if there are no object boxes, skip the picture
 def non_max_suppression_fast(boxes, overlapThresh):
+    print("NON MAX SUPRESSION FAST")
     # if there are no boxes, return an empty list
     if len(boxes) == 0:
         return []
@@ -120,14 +116,16 @@ def get_total_person_count(current_frame_persons):
     except:
         return 0  
 
-
+#3
 def update_current_frame_assignments(current_frame_persons, current_frame_sim_score,
                                      max_score, max_person_id, best_match_number):
+    print("UPDATE CURRENT FRAME ASSIGNMENTS")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     print("max_Score=",max_score, "max_person_id= ", max_person_id, "previous_frame_match = ", best_match_number)
-#     print("First", current_frame_sim_score)
+    print("First if", current_frame_sim_score)
     if max_person_id in current_frame_sim_score:
         del current_frame_sim_score[max_person_id]    
-#     print("Second", current_frame_sim_score)    
+    print("Second", current_frame_sim_score)    
     if max_person_id == -1:
         print(current_frame_sim_score)
         for current_id, current_person in enumerate(current_frame_persons):
@@ -137,49 +135,63 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                 print(current_person.assigned_number, "CASE 1")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(
                     current_frame_persons)+1
-#     print("Third", current_frame_sim_score)
+                print("Assigned number = ", current_frame_persons[current_id].assigned_number)
+    print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):  
         if current_person.person_id == max_person_id:
-            if max_score > 0.58:
+            if max_score > 0.6: #and dict hsa key
                 print(current_frame_persons[current_id].assigned_number, "CASE 2")
+                print("Max score > 0.6")
                 current_frame_persons[current_id].assigned_number = best_match_number
+                print("Max score > 0.6, assigned number = ", best_match_number)
             else:
                 print(current_frame_persons[current_id].assigned_number, "CASE 3")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(current_frame_persons)+1
-#     print("Fourth", current_frame_sim_score)
+                print("Max score <= 0.6, assigned number = ", current_frame_persons[current_id].assigned_number)
+    print("Fourth", current_frame_sim_score)
     for person_id, scores in list(current_frame_sim_score.items()):
         for k, v in list(current_frame_sim_score[person_id].items()):
             if k == best_match_number:
-#                 print("Match Found")
+                print("Match Found")
                 del current_frame_sim_score[person_id][k]                
-#     print("Fifth", current_frame_sim_score)
+    print("Fifth", current_frame_sim_score)
     return current_frame_persons,current_frame_sim_score
 
 
 def is_all_current_frame_persons_assigned(current_frame_persons):
+    print("IS ALL CURRENT FRAME PERSONS ASSIGNED")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     for current_id, current_person in enumerate(current_frame_persons):
         if current_person.assigned_number == 0:
+            print(False)
             return False
+    print(True)
     return True
 
-
+#2
 def find_best_match_score(frame_queue, current_frame_persons, current_frame_sim_score,total_person_count):
+    print("FIND BEST MATCH SCORE")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     while(not is_all_current_frame_persons_assigned(current_frame_persons)):
         max_score, max_person_id, best_match_number = 0, -1, -1
         for person_id, scores in list(current_frame_sim_score.items()):
             sim_score = current_frame_sim_score[person_id]
-#             print("Pratool", person_id, sim_score)
-            if len(sim_score) > 0 and max(sim_score.values()) > max_score:
-                max_score = max(sim_score.values())
+            print("Pratool", person_id, sim_score)
+            if len(sim_score) > 0 and max(sim_score.values()) > max_score: #HERE?
+                max_score = max(sim_score.values()) #get max value in sim_score -> sim_score is all similarity scores b/w person Id and other people
                 max_person_id = person_id
                 best_match_number = max(sim_score, key=sim_score.get)
+                print("Best match: " + str(best_match_number))
         current_frame_persons,current_frame_sim_score = update_current_frame_assignments(
             current_frame_persons, current_frame_sim_score, max_score, max_person_id, best_match_number)
     frame_queue, current_frame_persons = update_previous_frame(frame_queue, current_frame_persons)   
+    #print("Current frame persons" + str(current_frame_persons)) 
     return current_frame_persons, frame_queue
 
-
+#4, maybe this function could fix the same id in the same frame
 def update_previous_frame(frame_queue, current_frame_persons):
+    print("UPDATE PREVIOUS FRAME")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     arr=[]
     for frame_id, previous_frame in enumerate(frame_queue):
         for person_id, previous_person in enumerate(previous_frame.person_records):
@@ -198,35 +210,46 @@ def update_previous_frame(frame_queue, current_frame_persons):
             if current_person.assigned_number > val[0]:
                 current_frame_persons[person_id].assigned_number -= len(arr)
     return frame_queue, current_frame_persons
-                        
+
+#1
+#CALLED FIRST
+# returns things but never actually does anything with them              
 def assign_numbers_to_person(frame_queue, current_frame_persons, total_person_count):
+    print("ASSIGN NUMBERS TO PERSON")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     cos = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
     if not any(frame_queue): 
-#         print("if")
+        print("No frame queue:")
         for current_id, current_person in enumerate(current_frame_persons):
+            print("Current ID: " + str(current_id))
             total_person_count+=1
             current_frame_persons[current_id].assigned_number = total_person_count
         return current_frame_persons
     else:
-#         print("else")
+        print("Frame queue:")
         current_frame_sim_score=dict()
         for current_id, current_person in enumerate(current_frame_persons):            
             sim_score = defaultdict(list)
-#             print("current person", current_person.person_id)
+            print("current person", current_person.person_id)
             for previous_frame in frame_queue:
                 for previous_person in previous_frame.person_records:
                     similarity_score=cos(
                         current_person.feature,previous_person.feature).cpu().numpy()
-                    sim_score[previous_person.assigned_number].append(similarity_score)
-                    print("Previous Frame", previous_person.person_id,previous_person.assigned_number )
+                    sim_score[previous_person.assigned_number].append(similarity_score) #assigns a sim score to the prev person's assigned number
+                    print("Previous Frame", previous_person.assigned_number )
+                    print("Frame id: ", previous_frame.frame_id)
+                    print("Sim score: " + str(similarity_score) + "\n")
             for assigned_number in sim_score:
-                sim_score[assigned_number] = np.mean(sim_score[assigned_number])
+                sim_score[assigned_number] = np.median(sim_score[assigned_number])
             current_frame_sim_score[current_person.person_id] = sim_score  
             print("Person Details", current_person.person_id, current_person.center_cords,sim_score)
+        print("Call find best match score")
         return find_best_match_score(frame_queue, current_frame_persons, current_frame_sim_score, total_person_count)
 
-
+#Adds the person position and the frame they're located in to the dictionaries
 def update_person_position_and_frame(current_frame_persons,person_pos, current_frame_id ):
+    print("UPDATE PERSON POSITION AND FRAME")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     global dict_person_assigned_number_frames
     for current_person in current_frame_persons:
         if current_person.assigned_number not in person_pos:
@@ -239,11 +262,14 @@ def update_person_position_and_frame(current_frame_persons,person_pos, current_f
             dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)
         else:
             dict_person_assigned_number_frames[current_person.assigned_number] = []
-            dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)           
+            dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)       
+    print("Person Pos: " + str(person_pos))    
     return person_pos
 
 
 def update_person_frame(current_frame_id,frame_queue,person_pos):
+    print("UPDATE PERSON FRAME")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     global dict_person_assigned_number_frames
     for assigned_number in list(dict_person_assigned_number_frames.keys()):
         arr = dict_person_assigned_number_frames[assigned_number]
@@ -279,13 +305,8 @@ def update_person_frame(current_frame_id,frame_queue,person_pos):
                             del frame_queue[frame_id].person_records[person_id]            
     # print(dict_person_assigned_number_frames)
     # print("Queue Length", len(frame_queue))
+    #print("Frame Queue: " + str(frame_queue) + ", Person Pos: " + str(person_pos))
     return frame_queue,person_pos
-# GLOBAL VARIABLES TO FIND LINES ON THE ROAD
-# 0.0428455942 puts me at 29
-north_road_slope = .0684754522
-north_ycoord = 870
-south_road_slope = 0.0933
-south_ycoord = 1025
 
 def middle_between_points(point1, point2):
     middle = [None] * 2
@@ -293,14 +314,48 @@ def middle_between_points(point1, point2):
     middle[1] = (point1[1] + point2[1]) // 2 #y coordinate
     return middle
 
-def distance_between_points(point1, point2):
-    x_distance = (point2[0] - point1[0]) ** 2
-    y_distance = (point2[1] - point1[1]) ** 2
-    result = sqrt( x_distance + y_distance )
-    return result
+#Checks the proximity between 2 points within a set threshold
+def check_proximity(point1, point2):
+    y_thresh = 500
+    delta_y = point1[1] - point2[1]
+    if delta_y <= y_thresh or delta_y >= -y_thresh:
+        x_thresh = 300
+        delta_x = point1[0] - point2[0]
+        if delta_x <= x_thresh or delta_x >= -x_thresh:
+            return True
+    return False
 
+#checks if a point is on the edge of the screen within 
+#a bounds
+def check_if_on_edge(last_point, point):
+    if abs(2550 - point[0]) < 400:
+        if last_point[0] < point[0]: return True
+    elif abs(0-point[0]) < 400:
+        if last_point[0] > 400: return True
+
+    if abs(1920 - point[1]) < 400:
+        if last_point[1] < point[1]: return True
+    elif abs(0-point[1]) < 400:
+        if last_point[1] > point[1]: return True
+
+    return False
+
+def check_in_image_box(point):
+    image_poly = Polygon([(120, 0), (120, 1500), (1900, 1500), (1900,0)])
+    if image_poly.contains(point):
+        return True
+    return False
+        
+# GLOBAL VARIABLES TO FIND LINES ON THE ROAD
+# 0.0428455942 puts me at 29
+north_road_slope = .0684754522
+north_ycoord = 870
+south_road_slope = 0.0933
+south_ycoord = 1025
 # sometimes returns true when it shouldnt
 def did_person_cross_the_road(assigned_number, person_pos):
+    print("DID PERSON CROSS THE ROAD")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     #crossing the road conditions
     north_side = False #condition_1
     south_side = False #condition_2
@@ -333,6 +388,8 @@ def did_person_cross_the_road(assigned_number, person_pos):
     return False
 
 def angle_between_crosswalk_and_trajectory(person_pos):
+    print("ANGLE BETWEEN CROSSWALK AND TRAJECTORY")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     import math
     from sympy import Point, Line, pi
     first_point = 0
@@ -361,6 +418,8 @@ def angle_between_crosswalk_and_trajectory(person_pos):
 
 # sometimes returns true when it shouldnt
 def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
+    print("DID PERSON USE THE CROSSWALK")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     count=0
     # using the crosswalk coordinates
     # NOTE - FOR SHOW ONLY, NOT ACTUAL CROSSWALK COORDS BEING USED
@@ -375,6 +434,8 @@ def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
 
 def color_the_person_box(img_original, assigned_number, person_pos, person_cords, crosswalk_cords, 
                          val,dict_person_crossed_the_road, dict_person_use_the_crosswalk):
+    print("COLOR THE PERSON BOX")
+    print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     if did_person_cross_the_road(assigned_number, person_pos):
         #angle = angle_between_crosswalk_and_trajectory(person_pos[assigned_number])
         if assigned_number not in dict_person_crossed_the_road:
@@ -394,23 +455,32 @@ def color_the_person_box(img_original, assigned_number, person_pos, person_cords
 
 def main():
     image_list=[]
-    date_arr=['2021/08/31'] 
+    date_arr=[] 
     global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
     current_frame_persons=[]
     count = 0
     person_id=1
     total_person_count=0
     frame_id=0
-    frame_queue = deque([],5)
+    frame_queue = deque([],5) #original is 5
     person_pos = dict()
     frame_record = recordtype("frame_record", "frame_id person_records")
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
+
+    if len(sys.argv) < 2:
+        print("\n \nFormat: python pedestrian_detection.py [date1, date2, ...]")
+        print("Where dateN = yyyy/mm/dd ")
+        return
+
+    for arg in sys.argv:
+        date_arr.append(arg)
 
     dict_person_crossed_the_road = dict()
     dict_person_use_the_crosswalk = dict()
     dict_person_assigned_number_frames = dict()
     dict_frame_time_stamp = dict()
 
+    size = (0,0)
 
     global max_person_count
     max_person_count=0
@@ -428,10 +498,11 @@ def main():
                 var_time_str = var_time_str.replace('+0000','')
                 var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
                 var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
+                formatted = "{:02d}".format(var_date_object.month) + "-" + str(var_date_object.day) + "-" + str(var_date_object.year)
                 file_name = file_name.replace('.jpg','')
-                if 13 <= var_time_object.hour and var_time_object.hour <= 14: 
-                    xml_file = "/raid/AoT/image_label_xmls/08-31-2021/new_xmls/"+file_name+".xml"
-                    #print(xml_file)
+                if 13 <= var_time_object.hour and var_time_object.hour <= 13: 
+                    xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/new_xmls/"+file_name+".xml"
+                    print(xml_file)
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections'): # adds crosswalk_detections directory
                         os.mkdir('/raid/AoT/image_label_xmls/crosswalk_detections')
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str): # adds day to directory
@@ -453,7 +524,7 @@ def main():
                             pts = get_highlightable_coordinates()# uses non padded crosswalk coordinates as a highlighter for visual aid
                             temp_arr=[]
                             for person in person_coordinates:
-                                if person[0] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 2200:
+                                if person[0] < 1900 and abs((person[1]-person[3]) * (person[0]-person[2])) > 2200:
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
                                     print("Person: ", person , " - end person print")
@@ -465,12 +536,12 @@ def main():
                                     person_rec.frame_id = frame_rec.frame_id 
             #                         print(np.average([person[0],person[2]]))
                                     print("xml file",xml_file)
-                                    person_rec.center_cords = [int(np.average([person[0],person[2]])), person[3]] # finds the bottom center of the bounding box
+                                    person_rec.center_cords = [int(np.average([person[0],person[2]])), person[3]] # finds the center of the bounding box
                                     print("center coords: ", person_rec.center_cords)
                                     person_rec.feature = extractor(img)
-                                    print("Printing person_rec.feature: ")
-                                    print(person_rec.feature)
-                                    print("end person rec feature")
+                                    #print("Printing person_rec.feature: ")
+                                    #print(person_rec.feature)
+                                    #print("end person rec feature")
                         
             #                         print(person_id, person)
                                     
@@ -478,6 +549,7 @@ def main():
                                     
             #                         cv2.rectangle(img_original,(person[0],person[1]),(person[2],person[3]),(0,255,0),3)
                                     temp_arr.append([person_id, person[0],person[1], person[2], person[3]])
+                                    print("Temp arr: " + str(temp_arr))
                                     
                                     person_id+=1
                                     # if person_id> 100000:
@@ -491,6 +563,7 @@ def main():
                             total_person_count = get_total_person_count(current_frame_persons)
                             
                             for curr_person in current_frame_persons:
+                                print("Person id: " + str(curr_person.person_id))
                                 person_cross_the_road = did_person_cross_the_road(curr_person.assigned_number,person_pos)
                                 print("Current person", person_cross_the_road)
                                 if person_cross_the_road:
@@ -520,25 +593,26 @@ def main():
                                                 current_frame_persons[p_id].assigned_number), (
                                                 val[1],val[2]-30), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,255), 5)
 
-                            # Writing onto the image original person count, person used road or crosswalk stated
-                                                                                             
+                                               
                             # fills the crosswalk yellow
                             cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
                             # add sloped lines for road
                             # NOTE - NOT ACTUAL LINES USED - MOSTLY FOR SHOW
-                            cv2.line(img_original,(0,860),(2141,767),(0,0,255),8)
-                            cv2.line(img_original,(0,1025),(2143,825),(0,0,255),8)
                             # add vertical line down middle
                             #cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5)
                             # give transparency to all the stuff shown on the image
+                            cv2.line(img_original,(0,860),(2550,700),(0,0,255),8)
+                            cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
+
                             img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
-                            cv2.putText(img_new, "Person count = "+ str(total_person_count), (
-                                                50, 120), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,255), 6)
-                            cv2.putText(img_new, "Person crossed road = "+ str(len(dict_person_crossed_the_road)), (
-                                                50, 260), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,255), 6)  
-                            cv2.putText(img_new, "Person used crosswalk = "+ str(len(dict_person_use_the_crosswalk)), (
-                                                50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,255), 6)    
-                           
+                            # Writing onto the image original person count, person used road or crosswalk stated
+                            cv2.putText(img_original, "Person count = "+ str(total_person_count), (
+                                                50, 120), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)
+                            cv2.putText(img_original, "Person crossed road = "+ str(len(dict_person_crossed_the_road)), (
+                                                50, 260), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)  
+                            cv2.putText(img_original, "Person used crosswalk = "+ str(len(dict_person_use_the_crosswalk)), (
+                                                50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)                      
+
                             # used for video writer
                             height, width, layers = img_new.shape
                             size = (width,height)
@@ -547,10 +621,12 @@ def main():
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
                             #cv2.imwrite("/raid/AoT/image_label_xmls/08-31-2021/written/newest/" + file_name + '.jpg', img_new)
                             # plt.imshow(cv2.cvtColor(img_new, cv2.COLOR_BGR2RGB))
-                            # plt.show()    
+                            # plt.show()   
+                            print("\n") 
                         else:
                             frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
-            except:
+            except Exception as e:
+                print(str(e))
                 continue
     
     #create video of day/hour
