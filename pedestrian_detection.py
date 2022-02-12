@@ -124,36 +124,42 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
     print("max_Score=",max_score, "max_person_id= ", max_person_id, "previous_frame_match = ", best_match_number)
     print("First if", current_frame_sim_score)
     if max_person_id in current_frame_sim_score:
-        del current_frame_sim_score[max_person_id]    
+        del current_frame_sim_score[max_person_id] 
+
     print("Second", current_frame_sim_score)    
     if max_person_id == -1:
         print(current_frame_sim_score)
         for current_id, current_person in enumerate(current_frame_persons):
             print("current_frame_persons",current_person.assigned_number, current_person.person_id)
 #             if current_person.person_id == current_person_id:
-            if current_person.assigned_number == 0:
+            if current_person.assigned_number == 0:                 #PROBLEM FOUND HERE
                 print(current_person.assigned_number, "CASE 1")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(
-                    current_frame_persons)+1
+                    current_frame_persons)+1    #ADD 1 TO TOTAL PERSON COUNT BUT DOESN'T UPDATE TOTAL
                 print("Assigned number = ", current_frame_persons[current_id].assigned_number)
+                #dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number] = []
+
     print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):  
         if current_person.person_id == max_person_id:
-            if max_score > 0.6: #and dict hsa key
+            if max_score > 0.6:
                 print(current_frame_persons[current_id].assigned_number, "CASE 2")
-                print("Max score > 0.6")
                 current_frame_persons[current_id].assigned_number = best_match_number
                 print("Max score > 0.6, assigned number = ", best_match_number)
             else:
                 print(current_frame_persons[current_id].assigned_number, "CASE 3")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(current_frame_persons)+1
                 print("Max score <= 0.6, assigned number = ", current_frame_persons[current_id].assigned_number)
+
     print("Fourth", current_frame_sim_score)
     for person_id, scores in list(current_frame_sim_score.items()):
         for k, v in list(current_frame_sim_score[person_id].items()):
             if k == best_match_number:
-                print("Match Found")
-                del current_frame_sim_score[person_id][k]                
+                print("Person ID: ", person_id)
+                print("Score: ", scores)
+                print("Match Found", k)
+                del current_frame_sim_score[person_id][k]     
+
     print("Fifth", current_frame_sim_score)
     return current_frame_persons,current_frame_sim_score
 
@@ -606,11 +612,11 @@ def main():
 
                             img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
                             # Writing onto the image original person count, person used road or crosswalk stated
-                            cv2.putText(img_original, "Person count = "+ str(total_person_count), (
+                            cv2.putText(img_new, "Person count = "+ str(total_person_count), (
                                                 50, 120), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)
-                            cv2.putText(img_original, "Person crossed road = "+ str(len(dict_person_crossed_the_road)), (
+                            cv2.putText(img_new, "Person crossed road = "+ str(len(dict_person_crossed_the_road)), (
                                                 50, 260), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)  
-                            cv2.putText(img_original, "Person used crosswalk = "+ str(len(dict_person_use_the_crosswalk)), (
+                            cv2.putText(img_new, "Person used crosswalk = "+ str(len(dict_person_use_the_crosswalk)), (
                                                 50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)                      
 
                             # used for video writer
