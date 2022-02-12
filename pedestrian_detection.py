@@ -11,8 +11,8 @@ import matplotlib
 import math
 from matplotlib import pyplot as plt
 from numpy.core.fromnumeric import var
-
-sys.path.insert(1, '../deep-person-reid/')
+# Need to change parent directory here depending on if the repo is in home directory 
+sys.path.insert(1, './deep-person-reid/')
 import torch
 import torchreid
 from torchreid.utils import FeatureExtractor
@@ -27,22 +27,18 @@ import time
 # CONTAINS MODEL - IF WANTING TO CHANGE MODELS CHANGE THE "model_name" variable
 extractor = FeatureExtractor(model_name='osnet_x1_0', model_path='./model.pth.tar', device='cuda')
 
-
-# Uses crosswalk coordinates from xml_file path, need to check to see if new camera has different coordinates for the crosswalk
-# returns array of coordinates
-# need to replace crosswalk coordinates
-# use an xml to find it perma
+# Exact crosswalk coordinates from the new SAGE camera on campus
 def get_crosswalk_coordinates():
     coordinates = [[514, 796], [721, 783], [1095, 934], [763, 992]]
     return np.array(coordinates)
 
-# the following function is used in testing if expanded crosswalk coordinates would be better,
+# The following function is used in testing if expanded crosswalk coordinates would be better (people walk on crosswalk edges),
 # but helps us keep the highlighted portion of the crosswalk for the viewer to understand better
 def get_highlightable_coordinates():
     coordinates = [[524, 802], [667, 790], [1023, 941], [758, 962]] # for highlighting the crosswalk
     return np.array(coordinates)
 
-# parse the xml file
+# Parse the xml file
 # gets object, bndbox (bounding box for the objects), and check if the object is equal to a person
 # returns list all objects 
 def parse_xml(xml_file):
@@ -58,8 +54,7 @@ def parse_xml(xml_file):
             final_arr.append(arr)
     return final_arr
 
-
-# multiple boxes per object, compresses into just one box for the object
+# Multiple boxes per object, compresses into just one box for the object
 # finds overlap between pictures, if there are no object boxes, skip the picture
 def non_max_suppression_fast(boxes, overlapThresh):
     print("NON MAX SUPRESSION FAST")
@@ -353,11 +348,12 @@ def check_in_image_box(point):
     return False
         
 # GLOBAL VARIABLES TO FIND LINES ON THE ROAD
-# 0.0428455942 puts me at 29
+# Slopes found using (y2-y1)/(x2-x1) - points found by looking at road 
 north_road_slope = .0684754522
 north_ycoord = 870
 south_road_slope = 0.0933
 south_ycoord = 1025
+
 # sometimes returns true when it shouldnt
 def did_person_cross_the_road(assigned_number, person_pos):
     print("DID PERSON CROSS THE ROAD")
@@ -428,7 +424,6 @@ def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     count=0
     # using the crosswalk coordinates
-    # NOTE - FOR SHOW ONLY, NOT ACTUAL CROSSWALK COORDS BEING USED
     crosswalk_polygon = Polygon([(524,802),(667,790),(1023,941),(758,962)])
     #print("Pratool person cords",person_cords)
     for cords in person_cords:
@@ -446,11 +441,11 @@ def color_the_person_box(img_original, assigned_number, person_pos, person_cords
         #angle = angle_between_crosswalk_and_trajectory(person_pos[assigned_number])
         if assigned_number not in dict_person_crossed_the_road:
             dict_person_crossed_the_road[assigned_number] = True
-            # check this
+           
         if did_person_use_the_crosswalk(person_cords, crosswalk_cords):# and any(x<25 or x>155 for x in angle):
             if assigned_number not in dict_person_use_the_crosswalk:
                 dict_person_use_the_crosswalk[assigned_number] = True
-                # check this
+              
             cv2.rectangle(img_original,(val[1],val[2]),(val[3],val[4]),(0,255,0),5)#green 
         else:
             cv2.rectangle(img_original,(val[1],val[2]),(val[3],val[4]),(0,0,255),5)#red
@@ -460,24 +455,27 @@ def color_the_person_box(img_original, assigned_number, person_pos, person_cords
     return img_original, dict_person_crossed_the_road, dict_person_use_the_crosswalk
 
 def main():
-    image_list=[]
-    date_arr=[] 
+    image_list=[]  # Array the holds the new images created from this script 
+    date_arr=[]    # Main for loop array
     global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
     current_frame_persons=[]
     count = 0
     person_id=1
     total_person_count=0
     frame_id=0
-    frame_queue = deque([],5) #original is 5
+    frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
     person_pos = dict()
     frame_record = recordtype("frame_record", "frame_id person_records")
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
+    pts = get_highlightable_coordinates()# Uses exact crosswalk coordinates as a highlighter for visual aid
 
+    # Allows user to run the script through command line arguments (.xml files must exist)
+    # As of 2/12/2022 - TODO: find a way to get the plot_object_detection script to run constantly so PD can be done easily with CMD line
     if len(sys.argv) < 2:
         print("\n \nFormat: python pedestrian_detection.py [date1, date2, ...]")
         print("Where dateN = yyyy/mm/dd ")
         return
-
+    # Adds the date the user entered into the main loop that drives the pedestrian detection script
     for arg in sys.argv:
         date_arr.append(arg)
 
@@ -486,17 +484,20 @@ def main():
     dict_person_assigned_number_frames = dict()
     dict_frame_time_stamp = dict()
 
-    size = (0,0)
+    size = (0,0) # Used in creating a .mp4 video at the end of the script
 
     global max_person_count
     max_person_count=0
 
+    # Driver loop - based off of the days the user has entered as a CMD line argument
     for day in date_arr:
         PATH_TO_IMAGES_DIR = pathlib.Path('/raid/AoT/sage/000048B02D15BC7D/bottom/'+ day + '/')
         TEST_RAW_IMAGE_PATHS = sorted(list(PATH_TO_IMAGES_DIR.rglob("*.jpg")))
 
+        # Nested loop - checks each .jpg image in the sage directory
         for im in TEST_RAW_IMAGE_PATHS:
             try:
+                # Get the name of the .jpg file and strip the unneccesary mumbo jumbo
                 file_name = os.path.basename(im)
                 var_date_time = file_name[:len(file_name)-4].split("T")
                 var_date_str, var_time_str = var_date_time[0], var_date_time[1]
@@ -506,7 +507,8 @@ def main():
                 var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
                 formatted = "{:02d}".format(var_date_object.month) + "-" + str(var_date_object.day) + "-" + str(var_date_object.year)
                 file_name = file_name.replace('.jpg','')
-                if 13 <= var_time_object.hour and var_time_object.hour <= 13: 
+                # Checking for valid hours we use
+                if 13 <= var_time_object.hour and var_time_object.hour <= 22: 
                     xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/new_xmls/"+file_name+".xml"
                     print(xml_file)
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections'): # adds crosswalk_detections directory
@@ -520,15 +522,17 @@ def main():
                         print("Frame id", frame_id )
                         current_frame_persons=[]
                         
-                        person_coordinates = parse_xml(xml_file) # get the coordinates for a person in the picture
-                        person_coordinates = non_max_suppression_fast(np.array(person_coordinates),0.3)
+                        person_coordinates = parse_xml(xml_file)                                        # get the coordinates for a person in the picture
+                        person_coordinates = non_max_suppression_fast(np.array(person_coordinates),0.3) # Supress extra boxes around objects
 
-                        if len(person_coordinates)>0:            # checking to see if a person is within the picture
+                        # Check to see if a person is actually in the image 
+                        if len(person_coordinates)>0:
                             print("Printing person coordinates: ", person_coordinates)
                             img_original = cv2.imread(str(im))   # img_original now holds the image
                             img_c = img_original.copy()          # a copy of the original
-                            pts = get_highlightable_coordinates()# uses non padded crosswalk coordinates as a highlighter for visual aid
                             temp_arr=[]
+                            # Check to see if the person has good usuable data by checking if it is within the left 1900 pixels,
+                            # and to see if the area of the persons bounding box is greater than 2200 pixels                          
                             for person in person_coordinates:
                                 if person[0] < 1900 and abs((person[1]-person[3]) * (person[0]-person[2])) > 2200:
                                     if frame_id not in dict_frame_time_stamp:
@@ -541,7 +545,7 @@ def main():
                                     person_rec.person_id = person_id
                                     person_rec.frame_id = frame_rec.frame_id 
             #                         print(np.average([person[0],person[2]]))
-                                    print("xml file",xml_file)
+                                    print("xml file",xml_file) # Debugging purposes
                                     person_rec.center_cords = [int(np.average([person[0],person[2]])), person[3]] # finds the center of the bounding box
                                     print("center coords: ", person_rec.center_cords)
                                     person_rec.feature = extractor(img)
@@ -594,24 +598,22 @@ def main():
                                                              val,
                                                              dict_person_crossed_the_road,
                                                              dict_person_use_the_crosswalk)
+                                        # Write the assigned number onto the image next to the person - IN BLUE
                                         cv2.putText(
                                             img_original, str(
                                                 current_frame_persons[p_id].assigned_number), (
                                                 val[1],val[2]-30), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,255), 5)
 
                                                
-                            # fills the crosswalk yellow
+                            # fills the crosswalk GREEN
                             cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
-                            # add sloped lines for road
-                            # NOTE - NOT ACTUAL LINES USED - MOSTLY FOR SHOW
-                            # add vertical line down middle
-                            #cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5)
-                            # give transparency to all the stuff shown on the image
+                            # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
+                            # draw lines that people will be checked for crossing - RED
                             cv2.line(img_original,(0,860),(2550,700),(0,0,255),8)
                             cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
-
+                            # give transparency to the crosswalk and road lines
                             img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
-                            # Writing onto the image original person count, person used road or crosswalk stated
+                            # Writing onto the image original person count, person used road or crosswalk stated - NOT weighted
                             cv2.putText(img_new, "Person count = "+ str(total_person_count), (
                                                 50, 120), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)
                             cv2.putText(img_new, "Person crossed road = "+ str(len(dict_person_crossed_the_road)), (
@@ -623,16 +625,13 @@ def main():
                             height, width, layers = img_new.shape
                             size = (width,height)
                             image_list.append(img_new)
-                            # Saves file with writing to the path
+                            # Saves file with writing to the path - ALL .JPGS NOW STORED IN CROSSWALK DETECTIONS
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
-                            #cv2.imwrite("/raid/AoT/image_label_xmls/08-31-2021/written/newest/" + file_name + '.jpg', img_new)
-                            # plt.imshow(cv2.cvtColor(img_new, cv2.COLOR_BGR2RGB))
-                            # plt.show()   
                             print("\n") 
                         else:
                             frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
             except Exception as e:
-                print(str(e))
+                print("Exception thrown:", str(e))
                 continue
     
     #create video of day/hour
@@ -650,7 +649,10 @@ def main():
 
     with open('frame_timestamps_2021-10-04.pickle', 'wb') as handle3:
         pickle.dump(dict_frame_time_stamp, handle3, protocol=pickle.HIGHEST_PROTOCOL)
-    #save person coordinates
+
+    
+    # Create .csv files - used for tracing trajectories or other analytical jobs
+    # create file with people and their coordinates
     import csv
     a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w")
     writer = csv.writer(a_file)
@@ -658,19 +660,19 @@ def main():
         writer.writerow([key, value])
     a_file.close()
 
-    #print still image of all the crosswalk trajectories
+    # Print still image of hourly crosswalk trajectories
     print("Tracing trajectories...")
     from plot_lines import draw_lines
     draw_lines(var_date_str)
 
-    #save assigned number of frames per person
+    # Save assigned number of frames per person
     b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w")
     writer = csv.writer(b_file)
     for key, value in dict_person_assigned_number_frames.items():
         writer.writerow([key, value])
     b_file.close()
 
-    #save frame timestamps
+    # Save frame timestamps
     c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w")
     writer = csv.writer(c_file)
     for key, value in dict_frame_time_stamp.items():
