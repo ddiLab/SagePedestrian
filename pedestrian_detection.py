@@ -422,7 +422,7 @@ def angle_between_crosswalk_and_trajectory(person_pos):
     # print(angle)
     return angle
 
-# sometimes returns true when it shouldnt
+#checks if person used crosswalk within a certain polygon
 def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
     print("DID PERSON USE THE CROSSWALK")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
@@ -437,6 +437,14 @@ def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
         return True
     return False
 
+# img_original - The original image being processed (image)
+# assigned_number - The person's assigned number (int)
+# person_pos - Position of assigned_number (x,y pair)
+# person_cords - Unused (x,y pair)
+# crosswalk_cords - Coordinates of the crosswalk
+# val - bounding box of person (x min,max y min, max)
+# dict_person_crossed_the_road - Dictionary of people who crossed the road
+# dict_person_use_the_crosswalk - Dictionary of people who used the crosswalk
 def color_the_person_box(img_original, assigned_number, person_pos, person_cords, crosswalk_cords, 
                          val,dict_person_crossed_the_road, dict_person_use_the_crosswalk):
     print("COLOR THE PERSON BOX")
