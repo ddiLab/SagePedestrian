@@ -168,11 +168,8 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
     print("Fifth", current_frame_sim_score)
     return current_frame_persons,current_frame_sim_score
 
-<<<<<<< HEAD
 # Check to see if all of the people in the current frame have an assigned number
 # current_frame_persons = current people in frame
-=======
->>>>>>> 7809b0a6406d74838dbb43943479fc323488270d
 def is_all_current_frame_persons_assigned(current_frame_persons):
     print("IS ALL CURRENT FRAME PERSONS ASSIGNED")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
@@ -586,23 +583,6 @@ def main():
                                     print(curr_person.assigned_number, 
                                         did_person_use_the_crosswalk(person_pos[curr_person.assigned_number], pts))
                             
-<<<<<<< HEAD
-=======
-            #                 if total_person_count == 0:
-            #                     total_person_count = max_person_count
-            #                 else:
-            #                     max_person_count = total_person_count
-                                               
-                            # fills the crosswalk GREEN
-                            cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
-                            # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
-                            # draw lines that people will be checked for crossing - RED
-                            cv2.line(img_original,(0,860),(2550,700),(0,0,255),8)
-                            cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
-                            # give transparency to the crosswalk and road lines
-                            img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
-
->>>>>>> 7809b0a6406d74838dbb43943479fc323488270d
                             frame_rec.person_records = current_frame_persons
                             frame_queue.append(frame_rec)
                             print("Total person count", total_person_count)
