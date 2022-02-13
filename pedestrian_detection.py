@@ -12,7 +12,7 @@ import math
 from matplotlib import pyplot as plt
 from numpy.core.fromnumeric import var
 # Need to change parent directory here depending on if the repo is in home directory 
-sys.path.insert(1, './deep-person-reid/')
+sys.path.insert(1, '../deep-person-reid/')
 import torch
 import torchreid
 from torchreid.utils import FeatureExtractor
@@ -132,7 +132,12 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                 current_frame_persons[current_id].assigned_number = get_total_person_count(
                     current_frame_persons)+1    #ADD 1 TO TOTAL PERSON COUNT BUT DOESN'T UPDATE TOTAL
                 print("Assigned number = ", current_frame_persons[current_id].assigned_number)
-                #dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number] = []
+
+                if current_person.assigned_number in dict_person_assigned_number_frames:
+                    dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)
+                else:
+                    dict_person_assigned_number_frames[current_person.assigned_number] = []
+                    dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id) 
 
     print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):  
@@ -157,7 +162,6 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
 
     print("Fifth", current_frame_sim_score)
     return current_frame_persons,current_frame_sim_score
-
 
 def is_all_current_frame_persons_assigned(current_frame_persons):
     print("IS ALL CURRENT FRAME PERSONS ASSIGNED")
@@ -508,7 +512,7 @@ def main():
                 formatted = "{:02d}".format(var_date_object.month) + "-" + str(var_date_object.day) + "-" + str(var_date_object.year)
                 file_name = file_name.replace('.jpg','')
                 # Checking for valid hours we use
-                if 13 <= var_time_object.hour and var_time_object.hour <= 22: 
+                if 13 <= var_time_object.hour and var_time_object.hour <= 13: 
                     xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/new_xmls/"+file_name+".xml"
                     print(xml_file)
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections'): # adds crosswalk_detections directory
@@ -584,26 +588,6 @@ def main():
             #                     total_person_count = max_person_count
             #                 else:
             #                     max_person_count = total_person_count
-                            frame_rec.person_records = current_frame_persons
-                            frame_queue.append(frame_rec)
-                            print("Total person count", total_person_count)
-                            for val in temp_arr:
-                                for p_id, p_val in enumerate(current_frame_persons):
-                                    if current_frame_persons[p_id].person_id == val[0]:
-                                        img_original, dict_person_crossed_the_road, dict_person_use_the_crosswalk = color_the_person_box(img_original, 
-                                                             current_frame_persons[p_id].assigned_number, 
-                                                             person_pos, 
-                                                             person_pos[current_frame_persons[p_id].assigned_number], 
-                                                             pts,
-                                                             val,
-                                                             dict_person_crossed_the_road,
-                                                             dict_person_use_the_crosswalk)
-                                        # Write the assigned number onto the image next to the person - IN BLUE
-                                        cv2.putText(
-                                            img_original, str(
-                                                current_frame_persons[p_id].assigned_number), (
-                                                val[1],val[2]-30), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,255), 5)
-
                                                
                             # fills the crosswalk GREEN
                             cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
@@ -613,6 +597,27 @@ def main():
                             cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
                             # give transparency to the crosswalk and road lines
                             img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
+
+                            frame_rec.person_records = current_frame_persons
+                            frame_queue.append(frame_rec)
+                            print("Total person count", total_person_count)
+                            for val in temp_arr:
+                                for p_id, p_val in enumerate(current_frame_persons):
+                                    if current_frame_persons[p_id].person_id == val[0]:
+                                        img_new, dict_person_crossed_the_road, dict_person_use_the_crosswalk = color_the_person_box(img_new, 
+                                                             current_frame_persons[p_id].assigned_number, 
+                                                             person_pos, 
+                                                             person_pos[current_frame_persons[p_id].assigned_number], 
+                                                             pts,
+                                                             val,
+                                                             dict_person_crossed_the_road,
+                                                             dict_person_use_the_crosswalk)
+                                        # Write the assigned number onto the image next to the person - IN BLUE
+                                        cv2.putText(
+                                            img_new, str(
+                                                current_frame_persons[p_id].assigned_number), (
+                                                val[1],val[2]-30), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,255), 5)
+
                             # Writing onto the image original person count, person used road or crosswalk stated - NOT weighted
                             cv2.putText(img_new, "Person count = "+ str(total_person_count), (
                                                 50, 120), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)
