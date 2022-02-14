@@ -545,7 +545,7 @@ def main():
                             # Check to see if the person has good usuable data by checking if it is within the left 1900 pixels,
                             # and to see if the area of the persons bounding box is greater than 2200 pixels                          
                             for person in person_coordinates:
-                                if person[0] < 1900 and abs((person[1]-person[3]) * (person[0]-person[2])) > 2200:
+                                if person[0] < 1900 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1900:
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
                                     print("Person: ", person , " - end person print")
@@ -582,6 +582,15 @@ def main():
                                 if person_cross_the_road:
                                     print(curr_person.assigned_number, 
                                         did_person_use_the_crosswalk(person_pos[curr_person.assigned_number], pts))
+
+                            # fills the crosswalk GREEN
+                            cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
+                            # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
+                            # draw lines that people will be checked for crossing - RED
+                            cv2.line(img_original,(0,860),(2550,700),(0,0,255),8)
+                            cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
+                            # give transparency to the crosswalk and road lines
+                            img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
                             
                             frame_rec.person_records = current_frame_persons
                             frame_queue.append(frame_rec)
