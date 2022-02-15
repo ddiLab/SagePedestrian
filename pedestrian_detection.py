@@ -142,10 +142,14 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
     print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):
         if current_person.person_id == max_person_id:
-            if max_score > 0.6:
-                for frame in frame_queue:
-                    for person in frame_queue.person_records:
-                        if person.person_id == 
+            within_range = True
+            for frame in frame_queue:
+                for person in frame.person_records:
+                    if person.assigned_number == best_match_number:
+                        within_range = check_proximity(person.center_cords, current_person.center_cords)
+            print("Within range? ", within_range)
+            if max_score > 0.6 and within_range:
+                
                 print(current_frame_persons[current_id].assigned_number, "CASE 2")
                 current_frame_persons[current_id].assigned_number = best_match_number
                 print("Max score > 0.6, assigned number = ", best_match_number)
@@ -195,10 +199,6 @@ def find_best_match_score(frame_queue, current_frame_persons, current_frame_sim_
                 max_score_person_id = person_id
                 best_match_number = max(sim_score, key=sim_score.get)
                 print("Best match: " + str(best_match_number))
-        #for frame in frame_queue:
-            #for person in frame.person_records:
-                #if person.assigned_number == best_match_number:
-                    #if not check_proximity(person)
         current_frame_persons,current_frame_sim_score = update_current_frame_assignments(
             current_frame_persons, current_frame_sim_score, max_score, max_score_person_id, best_match_number, frame_queue)
     frame_queue, current_frame_persons = update_previous_frame(frame_queue, current_frame_persons)   
@@ -487,6 +487,7 @@ def main():
     person_id=1
     total_person_count=0
     frame_id=0
+    frame_counter = 0
     frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
     person_pos = dict()
     frame_record = recordtype("frame_record", "frame_id person_records")
@@ -559,6 +560,7 @@ def main():
                             # and to see if the area of the persons bounding box is greater than 2200 pixels
                             # person : xmin, xmax, ymin, ymax of person                          
                             for person in person_coordinates:
+                                frame_counter += 1
                                 if person[0] < 1700 and person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 2200:
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
@@ -589,6 +591,11 @@ def main():
                                     person_id+=1
                                     # if person_id> 100000:
                                     #     person_id=1
+                                else: 
+                                    if len(frame_queue) > 0 and frame_counter % 5 == 0:
+                                        frame_queue.popleft()
+                                        frame_counter = 0
+
             #                 frame_queue, person_pos=update_person_frame(frame_id,frame_queue, person_pos)        
                             assign_numbers_to_person(frame_queue, current_frame_persons, total_person_count)
                             
@@ -656,6 +663,7 @@ def main():
                             print("\n") 
                         else:
                             frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
+                            frame_queue.popleft() #should remove old data from queue over large time gaps
             except Exception as e:
                 print("Exception thrown:", str(e))
                 continue
