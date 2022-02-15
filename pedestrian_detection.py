@@ -112,13 +112,8 @@ def get_total_person_count(current_frame_persons):
         return 0  
 
 #3
-# current_frame_persons = holds all the people in the current frame - Array of person_recs
-# current_frame_sim_score = holds the sim scores for the people in the current frames
-# max_score = holds the max sim score for the person 
-# max_person_id = starts at -1
-# best_match_number = returns whatver ID has the best sim score
 def update_current_frame_assignments(current_frame_persons, current_frame_sim_score,
-                                     max_score, max_person_id, best_match_number):
+                                     max_score, max_person_id, best_match_number, frame_queue):
     print("UPDATE CURRENT FRAME ASSIGNMENTS")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     print("max_Score=",max_score, "max_person_id= ", max_person_id, "previous_frame_match = ", best_match_number)
@@ -145,15 +140,23 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                     dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id) 
 
     print("Third", current_frame_sim_score)
-    for current_id, current_person in enumerate(current_frame_persons):  
+    for current_id, current_person in enumerate(current_frame_persons):
         if current_person.person_id == max_person_id:
             if max_score > 0.6:
+                for frame in frame_queue:
+                    for person in frame_queue.person_records:
+                        if person.person_id == 
                 print(current_frame_persons[current_id].assigned_number, "CASE 2")
                 current_frame_persons[current_id].assigned_number = best_match_number
                 print("Max score > 0.6, assigned number = ", best_match_number)
             else:
                 print(current_frame_persons[current_id].assigned_number, "CASE 3")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(current_frame_persons)+1
+                if current_person.assigned_number in dict_person_assigned_number_frames:
+                    dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)
+                else:
+                    dict_person_assigned_number_frames[current_person.assigned_number] = []
+                    dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id) 
                 print("Max score <= 0.6, assigned number = ", current_frame_persons[current_id].assigned_number)
 
     print("Fourth", current_frame_sim_score)
@@ -168,8 +171,6 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
     print("Fifth", current_frame_sim_score)
     return current_frame_persons,current_frame_sim_score
 
-# Check to see if all of the people in the current frame have an assigned number
-# current_frame_persons = current people in frame
 def is_all_current_frame_persons_assigned(current_frame_persons):
     print("IS ALL CURRENT FRAME PERSONS ASSIGNED")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
@@ -185,17 +186,21 @@ def find_best_match_score(frame_queue, current_frame_persons, current_frame_sim_
     print("FIND BEST MATCH SCORE")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     while(not is_all_current_frame_persons_assigned(current_frame_persons)):
-        max_score, max_person_id, best_match_number = 0, -1, -1
+        max_score, max_score_person_id, best_match_number = 0, -1, -1
         for person_id, scores in list(current_frame_sim_score.items()):
             sim_score = current_frame_sim_score[person_id]
             print("Pratool", person_id, sim_score)
-            if len(sim_score) > 0 and max(sim_score.values()) > max_score: #HERE?
+            if len(sim_score) > 0 and max(sim_score.values()) > max_score:
                 max_score = max(sim_score.values()) #get max value in sim_score -> sim_score is all similarity scores b/w person Id and other people
-                max_person_id = person_id
+                max_score_person_id = person_id
                 best_match_number = max(sim_score, key=sim_score.get)
                 print("Best match: " + str(best_match_number))
+        #for frame in frame_queue:
+            #for person in frame.person_records:
+                #if person.assigned_number == best_match_number:
+                    #if not check_proximity(person)
         current_frame_persons,current_frame_sim_score = update_current_frame_assignments(
-            current_frame_persons, current_frame_sim_score, max_score, max_person_id, best_match_number)
+            current_frame_persons, current_frame_sim_score, max_score, max_score_person_id, best_match_number, frame_queue)
     frame_queue, current_frame_persons = update_previous_frame(frame_queue, current_frame_persons)   
     #print("Current frame persons" + str(current_frame_persons)) 
     return current_frame_persons, frame_queue
@@ -224,7 +229,8 @@ def update_previous_frame(frame_queue, current_frame_persons):
     return frame_queue, current_frame_persons
 
 #1
-#CALLED FIRST             
+#CALLED FIRST
+# returns things but never actually does anything with them              
 def assign_numbers_to_person(frame_queue, current_frame_persons, total_person_count):
     print("ASSIGN NUMBERS TO PERSON")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
@@ -251,16 +257,13 @@ def assign_numbers_to_person(frame_queue, current_frame_persons, total_person_co
                     print("Frame id: ", previous_frame.frame_id)
                     print("Sim score: " + str(similarity_score) + "\n")
             for assigned_number in sim_score:
-                sim_score[assigned_number] = np.median(sim_score[assigned_number])
+                sim_score[assigned_number] = np.mean(sim_score[assigned_number])
             current_frame_sim_score[current_person.person_id] = sim_score  
             print("Person Details", current_person.person_id, current_person.center_cords,sim_score)
         print("Call find best match score")
         return find_best_match_score(frame_queue, current_frame_persons, current_frame_sim_score, total_person_count)
 
 #Adds the person position and the frame they're located in to the dictionaries
-# current_frame_persons = array that holds the people in the current frame
-# person_pos = holds person coordinates - Array
-# current_frame_id NOT used as of 2/12/2022
 def update_person_position_and_frame(current_frame_persons,person_pos, current_frame_id ):
     print("UPDATE PERSON POSITION AND FRAME")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
@@ -280,7 +283,7 @@ def update_person_position_and_frame(current_frame_persons,person_pos, current_f
     print("Person Pos: " + str(person_pos))    
     return person_pos
 
-# 
+
 def update_person_frame(current_frame_id,frame_queue,person_pos):
     print("UPDATE PERSON FRAME")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
@@ -330,10 +333,10 @@ def middle_between_points(point1, point2):
 
 #Checks the proximity between 2 points within a set threshold
 def check_proximity(point1, point2):
-    y_thresh = 500
+    y_thresh = 250
     delta_y = point1[1] - point2[1]
     if delta_y <= y_thresh or delta_y >= -y_thresh:
-        x_thresh = 300
+        x_thresh = 500
         delta_x = point1[0] - point2[0]
         if delta_x <= x_thresh or delta_x >= -x_thresh:
             return True
@@ -352,6 +355,12 @@ def check_if_on_edge(last_point, point):
     elif abs(0-point[1]) < 400:
         if last_point[1] > point[1]: return True
 
+    return False
+
+def check_in_image_box(point):
+    image_poly = Polygon([(120, 0), (120, 1500), (1900, 1500), (1900,0)])
+    if image_poly.contains(point):
+        return True
     return False
         
 # GLOBAL VARIABLES TO FIND LINES ON THE ROAD
@@ -473,10 +482,11 @@ def main():
     image_list=[]  # Array the holds the new images created from this script 
     date_arr=[]    # Main for loop array
     global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
-    current_frame_persons=[] # List of all the people in the current frame
-    person_id=1          # Person id
-    total_person_count=0 # Current frame persons - all the people in the person records (current frame)
-    frame_id=0           # Actual ID to keep track of which frame is which
+    current_frame_persons=[]
+    count = 0
+    person_id=1
+    total_person_count=0
+    frame_id=0
     frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
     person_pos = dict()
     frame_record = recordtype("frame_record", "frame_id person_records")
@@ -499,6 +509,9 @@ def main():
     dict_frame_time_stamp = dict()
 
     size = (0,0) # Used in creating a .mp4 video at the end of the script
+
+    global max_person_count
+    max_person_count=0
 
     # Driver loop - based off of the days the user has entered as a CMD line argument
     for day in date_arr:
@@ -541,11 +554,12 @@ def main():
                             print("Printing person coordinates: ", person_coordinates)
                             img_original = cv2.imread(str(im))   # img_original now holds the image
                             img_c = img_original.copy()          # a copy of the original
-                            temp_arr=[] # [0] = current person if, [0...4] = bounding box coordinates
+                            temp_arr=[]
                             # Check to see if the person has good usuable data by checking if it is within the left 1900 pixels,
-                            # and to see if the area of the persons bounding box is greater than 2200 pixels                          
+                            # and to see if the area of the persons bounding box is greater than 2200 pixels
+                            # person : xmin, xmax, ymin, ymax of person                          
                             for person in person_coordinates:
-                                if person[0] < 1900 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1900:
+                                if person[0] < 1700 and person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 2200:
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
                                     print("Person: ", person , " - end person print")
@@ -560,13 +574,21 @@ def main():
                                     person_rec.center_cords = [int(np.average([person[0],person[2]])), person[3]] # finds the center of the bounding box
                                     print("center coords: ", person_rec.center_cords)
                                     person_rec.feature = extractor(img)
+                                    #print("Printing person_rec.feature: ")
+                                    #print(person_rec.feature)
+                                    #print("end person rec feature")
+                        
+            #                         print(person_id, person)
                                     
                                     current_frame_persons.append(person_rec)
                                     
-                                    temp_arr.append([person_id, person[0],person[1], person[2], person[3]]) # Add person and their bounding box to temp arr
-                                    print("Temp arr: " + str(temp_arr)) # debugging purposes
+            #                         cv2.rectangle(img_original,(person[0],person[1]),(person[2],person[3]),(0,255,0),3)
+                                    temp_arr.append([person_id, person[0],person[1], person[2], person[3]])
+                                    print("Temp arr: " + str(temp_arr))
                                     
                                     person_id+=1
+                                    # if person_id> 100000:
+                                    #     person_id=1
             #                 frame_queue, person_pos=update_person_frame(frame_id,frame_queue, person_pos)        
                             assign_numbers_to_person(frame_queue, current_frame_persons, total_person_count)
                             
@@ -582,7 +604,12 @@ def main():
                                 if person_cross_the_road:
                                     print(curr_person.assigned_number, 
                                         did_person_use_the_crosswalk(person_pos[curr_person.assigned_number], pts))
-
+                            
+            #                 if total_person_count == 0:
+            #                     total_person_count = max_person_count
+            #                 else:
+            #                     max_person_count = total_person_count
+                                               
                             # fills the crosswalk GREEN
                             cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
                             # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
@@ -591,7 +618,7 @@ def main():
                             cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
                             # give transparency to the crosswalk and road lines
                             img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
-                            
+
                             frame_rec.person_records = current_frame_persons
                             frame_queue.append(frame_rec)
                             print("Total person count", total_person_count)
@@ -621,16 +648,16 @@ def main():
                                                 50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)                      
 
                             # used for video writer
-                            height, width, layers = img_new.shape # for video
-                            size = (width,height) # for video 
-                            image_list.append(img_new) # for video
+                            height, width, layers = img_new.shape
+                            size = (width,height)
+                            image_list.append(img_new)
                             # Saves file with writing to the path - ALL .JPGS NOW STORED IN CROSSWALK DETECTIONS
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
                             print("\n") 
                         else:
                             frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
             except Exception as e:
-                print("Exception thrown: ", str(e))
+                print("Exception thrown:", str(e))
                 continue
     
     #create video of day/hour
