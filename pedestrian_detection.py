@@ -149,10 +149,13 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                         within_range = check_proximity(person.center_cords, current_person.center_cords)
             print("Within range? ", within_range)
             if max_score > 0.6 and within_range:
-                
                 print(current_frame_persons[current_id].assigned_number, "CASE 2")
                 current_frame_persons[current_id].assigned_number = best_match_number
                 print("Max score > 0.6, assigned number = ", best_match_number)
+                print("Current frame sim score: ", current_frame_sim_score)
+                if current_id in current_frame_sim_score.keys():
+                    if best_match_number in current_frame_sim_score[current_id].values():
+                        del current_frame_sim_score[current_id][best_match_number]
             else:
                 print(current_frame_persons[current_id].assigned_number, "CASE 3")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(current_frame_persons)+1
@@ -253,13 +256,14 @@ def assign_numbers_to_person(frame_queue, current_frame_persons, total_person_co
                     similarity_score=cos(
                         current_person.feature,previous_person.feature).cpu().numpy()
                     sim_score[previous_person.assigned_number].append(similarity_score) #assigns a sim score to the prev person's assigned number
-                    print("Previous Frame", previous_person.assigned_number )
+                    print("Previous Frame", previous_person.assigned_number, previous_person.person_id )
                     print("Frame id: ", previous_frame.frame_id)
                     print("Sim score: " + str(similarity_score) + "\n")
             for assigned_number in sim_score:
                 sim_score[assigned_number] = np.mean(sim_score[assigned_number])
             current_frame_sim_score[current_person.person_id] = sim_score  
             print("Person Details", current_person.person_id, current_person.center_cords,sim_score)
+        print("Current frame sim score: ", current_frame_sim_score)
         print("Call find best match score")
         return find_best_match_score(frame_queue, current_frame_persons, current_frame_sim_score, total_person_count)
 
@@ -530,11 +534,11 @@ def main():
                 var_time_str = var_time_str.replace('+0000','')
                 var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
                 var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
-                formatted = "{:02d}".format(var_date_object.month) + "-" + str(var_date_object.day) + "-" + str(var_date_object.year)
+                formatted = "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year)
                 file_name = file_name.replace('.jpg','')
                 # Checking for valid hours we use
                 if 13 <= var_time_object.hour and var_time_object.hour <= 13: 
-                    xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/new_xmls/"+file_name+".xml"
+                    xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/"+file_name+".xml"
                     print(xml_file)
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections'): # adds crosswalk_detections directory
                         os.mkdir('/raid/AoT/image_label_xmls/crosswalk_detections')
@@ -561,7 +565,7 @@ def main():
                             # person : xmin, xmax, ymin, ymax of person                          
                             for person in person_coordinates:
                                 frame_counter += 1
-                                if person[0] < 1700 and person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 2200:
+                                if person[0] < 1900 and person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 2000:
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
                                     print("Person: ", person , " - end person print")
@@ -572,7 +576,7 @@ def main():
                                     person_rec.person_id = person_id
                                     person_rec.frame_id = frame_rec.frame_id 
             #                         print(np.average([person[0],person[2]]))
-                                    print("xml file",xml_file) # Debugging purposes
+                                    #print("xml file",xml_file) # Debugging purposes
                                     person_rec.center_cords = [int(np.average([person[0],person[2]])), person[3]] # finds the center of the bounding box
                                     print("center coords: ", person_rec.center_cords)
                                     person_rec.feature = extractor(img)
@@ -660,10 +664,11 @@ def main():
                             image_list.append(img_new)
                             # Saves file with writing to the path - ALL .JPGS NOW STORED IN CROSSWALK DETECTIONS
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
-                            print("\n") 
+                            print("\n\n") 
                         else:
                             frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
-                            frame_queue.popleft() #should remove old data from queue over large time gaps
+                            if len(frame_queue) > 0:
+                                frame_queue.popleft() #should remove old data from queue over large time gaps
             except Exception as e:
                 print("Exception thrown:", str(e))
                 continue
