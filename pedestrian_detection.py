@@ -139,7 +139,7 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                     dict_person_assigned_number_frames[current_person.assigned_number] = []
                     dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id) 
 
-    print("Third", current_frame_sim_score)
+    print("Third step", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):
         if current_person.person_id == max_person_id:
             within_range = True
