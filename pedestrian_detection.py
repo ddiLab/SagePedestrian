@@ -133,11 +133,11 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                     current_frame_persons)+1    #ADD 1 TO TOTAL PERSON COUNT BUT DOESN'T UPDATE TOTAL
                 print("Assigned number = ", current_frame_persons[current_id].assigned_number)
 
-                if current_person.assigned_number in dict_person_assigned_number_frames:
-                    dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)
-                else:
-                    dict_person_assigned_number_frames[current_person.assigned_number] = []
-                    dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id) 
+                #if current_person.assigned_number in dict_person_assigned_number_frames:
+                    #dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)
+                #else:
+                    #dict_person_assigned_number_frames[current_person.assigned_number] = []
+                    #dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id) 
 
     print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):
@@ -153,9 +153,9 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                 current_frame_persons[current_id].assigned_number = best_match_number
                 print("Max score > 0.6, assigned number = ", best_match_number)
                 print("Current frame sim score: ", current_frame_sim_score)
-                if current_id in current_frame_sim_score.keys():
-                    if best_match_number in current_frame_sim_score[current_id].values():
-                        del current_frame_sim_score[current_id][best_match_number]
+                #if current_id in current_frame_sim_score.keys():
+                    #if best_match_number in current_frame_sim_score[current_id].values():
+                        #del current_frame_sim_score[current_id][best_match_number]
             else:
                 print(current_frame_persons[current_id].assigned_number, "CASE 3")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(current_frame_persons)+1
@@ -488,6 +488,7 @@ def main():
     global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
     current_frame_persons=[]
     count = 0
+    second_count = 0
     person_id=1
     total_person_count=0
     frame_id=0
@@ -556,6 +557,7 @@ def main():
 
                         # Check to see if a person is actually in the image 
                         if len(person_coordinates)>0:
+                            count = 0
                             print("Printing person coordinates: ", person_coordinates)
                             img_original = cv2.imread(str(im))   # img_original now holds the image
                             img_c = img_original.copy()          # a copy of the original
@@ -596,7 +598,7 @@ def main():
                                     # if person_id> 100000:
                                     #     person_id=1
                                 else: 
-                                    if len(frame_queue) > 0 and frame_counter % 5 == 0:
+                                    if len(frame_queue) > 0 and frame_counter % 5 == 0 and frame_counter != 0:
                                         frame_queue.popleft()
                                         frame_counter = 0
 
@@ -666,8 +668,10 @@ def main():
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
                             print("\n\n") 
                         else:
+                            second_count += 1
+                            max_second_count = 5
                             frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
-                            if len(frame_queue) > 0:
+                            if len(frame_queue) > 0 and second_count > max_second_count: #wait at least 5 seconds before popping
                                 frame_queue.popleft() #should remove old data from queue over large time gaps
             except Exception as e:
                 print("Exception thrown:", str(e))
@@ -693,30 +697,30 @@ def main():
     # Create .csv files - used for tracing trajectories or other analytical jobs
     # create file with people and their coordinates
     import csv
-    a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w")
+    a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w+")
     writer = csv.writer(a_file)
     for key, value in person_pos.items():
         writer.writerow([key, value])
     a_file.close()
 
-    # Print still image of hourly crosswalk trajectories
-    print("Tracing trajectories...")
-    from plot_lines import draw_lines
-    draw_lines(var_date_str)
-
     # Save assigned number of frames per person
-    b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w")
+    b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w+")
     writer = csv.writer(b_file)
     for key, value in dict_person_assigned_number_frames.items():
         writer.writerow([key, value])
     b_file.close()
 
     # Save frame timestamps
-    c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w")
+    c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w+")
     writer = csv.writer(c_file)
     for key, value in dict_frame_time_stamp.items():
         writer.writerow([key, value])
     c_file.close()
+
+    # Print still image of hourly crosswalk trajectories
+    print("Tracing trajectories...")
+    from plot_lines import draw_lines
+    draw_lines(var_date_str)
 
 
 if __name__ == '__main__':
