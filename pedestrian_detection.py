@@ -558,6 +558,7 @@ def main():
                         # Check to see if a person is actually in the image 
                         if len(person_coordinates)>0:
                             count = 0
+                            second_count = 0
                             print("Printing person coordinates: ", person_coordinates)
                             img_original = cv2.imread(str(im))   # img_original now holds the image
                             img_c = img_original.copy()          # a copy of the original
