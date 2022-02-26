@@ -30,9 +30,9 @@ for gpu in gpus:
 IMAGE_PATHS = []
 
 #image director
-temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/2021/08/31/"
+temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/2022/01/12/"
 #output directory
-xml_output_dir = "/raid/AoT/image_label_xmls/08-31-2021/new_xmls/"
+#xml_output_dir = "/raid/AoT/image_label_xmls/01-12-2022/"
 
 for filename in os.listdir(temp_image_dir):
     for picture in os.listdir(temp_image_dir + filename):
@@ -227,8 +227,9 @@ def write_label_xmls(model, image_path):
     var_date_str, var_time_str = var_date_time[0], var_date_time[1]
     var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
     var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
+    xml_output_dir = "/raid/AoT/image_label_xmls/" + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year) + "/"
     # specify the hours of the day you wish to run
-    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 22:
+    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 13:
         image_np = np.array(Image.open(image_path))
         # Actual detection.
         output_dict = run_inference_for_single_image(model, image_np)
@@ -250,6 +251,9 @@ def write_label_xmls(model, image_path):
 
         path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml")
         writer.save(path_to_xml)
+
+if(not os.path.isdir(xml_output_dir))
+    os.mkdir(xml_output_dir)
 
 for image_path in IMAGE_PATHS:
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
