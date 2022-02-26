@@ -41,6 +41,8 @@ def get_highlightable_coordinates():
 # Parse the xml file
 # gets object, bndbox (bounding box for the objects), and check if the object is equal to a person
 # returns list all objects 
+# snow on ground can cause certain object detection errors that give every image a person which means it will be ran
+# dramatically slows down and takes up much more space
 def parse_xml(xml_file):
     final_arr=[]
     tree= ET.parse(xml_file)
@@ -133,6 +135,8 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                     current_frame_persons)+1    #ADD 1 TO TOTAL PERSON COUNT BUT DOESN'T UPDATE TOTAL
                 print("Assigned number = ", current_frame_persons[current_id].assigned_number)
 
+
+                # THIS CODE CAUSES PLATEAU ON DOUBLE ID ANOMALIES
                 #if current_person.assigned_number in dict_person_assigned_number_frames:
                     #dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)
                 #else:
