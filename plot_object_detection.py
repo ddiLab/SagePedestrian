@@ -28,11 +28,19 @@ for gpu in gpus:
 
 #We need to get the images captured by the sage node
 IMAGE_PATHS = []
+now = datetime.now()
+month = "%02d" % (now.month)
+day = "%02d" % (now.day)
+year = "%04d" % (now.year)
+current_date = year + "/" + month + "/" + day + "/"
 
-#image director
-temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/2022/01/12/"
+#image directory with current date for automation
+# FOR SPECIFIC DAYS ALTER THIS AS "temp_image_dir" -> /raid/AoT/sage/000048B02D15BC7D/bottom/yyyy/mm/dd/
+temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/" + current_date
+
 #output directory
-#xml_output_dir = "/raid/AoT/image_label_xmls/01-12-2022/"
+output_dir_date = month + "-" + day + "-" + year + "/"
+xml_output_dir = "/raid/AoT/image_label_xmls/" + output_dir_date
 
 for filename in os.listdir(temp_image_dir):
     for picture in os.listdir(temp_image_dir + filename):
@@ -101,8 +109,6 @@ from object_detection.utils import label_map_util
 from object_detection.utils import config_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
-# USED TO TRACK HOW LONG A SCRIPT IS RUNNING FOR IN END EQUATION
-START_OF_SCRIPT = time.time()
 
 PATH_TO_CFG = PATH_TO_MODEL_DIR + "/pipeline.config"
 PATH_TO_CKPT = PATH_TO_MODEL_DIR + "/checkpoint"
@@ -252,16 +258,10 @@ def write_label_xmls(model, image_path):
         path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml")
         writer.save(path_to_xml)
 
-if(not os.path.isdir(xml_output_dir))
+if not os.path.isdir(xml_output_dir):
     os.mkdir(xml_output_dir)
 
 for image_path in IMAGE_PATHS:
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
     if pathlib.Path(xml_path).is_file() is False:
         write_label_xmls(detection_model, image_path)
-
-# sphinx_gallery_thumbnail_number = 2
-# tracks the end time of the script
-END_OF_SCRIPT = time.time()
-# print the overall runtime of the object detection code for however many hours are specified
-print("RUNTIME: ", (END_OF_SCRIPT - START_OF_SCRIPT) / 120, " HOURS")
