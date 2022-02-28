@@ -1,3 +1,10 @@
+# TO RUN THIS SCRIPT IN THE BACKGROUND DO THE FOLLOWING COMMANDS:
+# 1) python plot_object_detection.py
+# 2) CTRL + Z
+# 3) bg
+# 4) jobs
+# 5) disown %JOB NUMBER HERE
+
 #!/usr/bin/env python
 # coding: utf-8
 """
@@ -28,19 +35,30 @@ for gpu in gpus:
 
 #We need to get the images captured by the sage node
 IMAGE_PATHS = []
+
+# Check to see if the user wants a specific date ran, otherwise the default is the current date
+import sys
+output_dir_date = ""
+if len(sys.argv) > 2: # wrong number of arguments
+    print("\n Format: python plot_object_detection.py date")
+    print("Where date = yyyy/mm/dd ")
+    quit()
+if len(sys.argv) == 2: # have an input date
+    current_date = sys.argv[1] + "/"
+    output_dir_date = sys.argv[1]
+    new_dir = sys.argv[1]
+    new_dir = new_dir.split("/")
+    output_dir_date = new_dir[1] + "-" + new_dir[2] + "-" + new_dir[0] + "/" # reformatting to output format
 now = datetime.now()
 month = "%02d" % (now.month)
 day = "%02d" % (now.day)
 year = "%04d" % (now.year)
-current_date = year + "/" + month + "/" + day + "/"
+if len(sys.argv) == 1: # default to current time
+   current_date = year + "/" + month + "/" + day + "/"
+   output_dir_date = month + "-" + day + "-" + year + "/"
 
-#image directory with current date for automation
-# FOR SPECIFIC DAYS ALTER THIS AS "temp_image_dir" -> /raid/AoT/sage/000048B02D15BC7D/bottom/yyyy/mm/dd/
 temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/" + current_date
-
-#output directory
-output_dir_date = month + "-" + day + "-" + year + "/"
-xml_output_dir = "/raid/AoT/image_label_xmls/" + output_dir_date
+xml_output_dir = "/raid/AoT/image_label_xmls/" + output_dir_date # directory is created if it does not exist later
 
 for filename in os.listdir(temp_image_dir):
     for picture in os.listdir(temp_image_dir + filename):
@@ -139,9 +157,6 @@ end_time = time.time()
 elapsed_time = end_time - start_time
 print('Done! Took {} seconds'.format(elapsed_time))
 
-
-
-
 # check predict and post processing
 # raise to 75 threshold
 
@@ -235,7 +250,7 @@ def write_label_xmls(model, image_path):
     var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
     xml_output_dir = "/raid/AoT/image_label_xmls/" + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year) + "/"
     # specify the hours of the day you wish to run
-    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 13:
+    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 13: # change this 13 to run more than 1 hour
         image_np = np.array(Image.open(image_path))
         # Actual detection.
         output_dict = run_inference_for_single_image(model, image_np)
@@ -258,10 +273,10 @@ def write_label_xmls(model, image_path):
         path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml")
         writer.save(path_to_xml)
 
-if not os.path.isdir(xml_output_dir):
+if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
     os.mkdir(xml_output_dir)
 
-for image_path in IMAGE_PATHS:
+for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
     if pathlib.Path(xml_path).is_file() is False:
         write_label_xmls(detection_model, image_path)
