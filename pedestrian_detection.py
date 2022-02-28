@@ -12,7 +12,7 @@ import math
 from matplotlib import pyplot as plt
 from numpy.core.fromnumeric import var
 # Need to change parent directory here depending on if the repo is in home directory 
-sys.path.insert(1, '../deep-person-reid/')
+sys.path.insert(1, './deep-person-reid/')
 import torch
 import torchreid
 from torchreid.utils import FeatureExtractor
