@@ -109,7 +109,7 @@ def non_max_suppression_fast(boxes, overlapThresh):
 def get_total_person_count(current_frame_persons):
     global dict_person_assigned_number_frames
     try:
-        return max(dict_person_assigned_number_frames, key=dict_person_assigned_number_frames.get)   
+        return max(dict_person_assigned_number_frames) #key=dict_person_assigned_number_frames.get)   
     except:
         return 0  
 
@@ -133,15 +133,19 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                 print(current_person.assigned_number, "CASE 1")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(
                     current_frame_persons)+1    #ADD 1 TO TOTAL PERSON COUNT BUT DOESN'T UPDATE TOTAL
+                print("New assigned number: ", current_person.assigned_number)
+                print(get_total_person_count(current_frame_persons))
+                
                 print("Assigned number = ", current_frame_persons[current_id].assigned_number)
-
-
                 # THIS CODE CAUSES PLATEAU ON DOUBLE ID ANOMALIES
-                #if current_person.assigned_number in dict_person_assigned_number_frames:
-                    #dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)
-                #else:
-                    #dict_person_assigned_number_frames[current_person.assigned_number] = []
-                    #dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id) 
+                if current_person.assigned_number in dict_person_assigned_number_frames:
+                    dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number].append(current_person.frame_id)
+                    print("Key already exists")
+                else:
+                    dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number] = []
+                    dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number].append(current_person.frame_id)
+                    print("Key was added to dict")
+                print(dict_person_assigned_number_frames)
 
     print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):
@@ -275,7 +279,7 @@ def assign_numbers_to_person(frame_queue, current_frame_persons, total_person_co
 def update_person_position_and_frame(current_frame_persons,person_pos, current_frame_id ):
     print("UPDATE PERSON POSITION AND FRAME")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-    global dict_person_assigned_number_frames
+    #global dict_person_assigned_number_frames
     for current_person in current_frame_persons:
         if current_person.assigned_number not in person_pos:
             person_pos[current_person.assigned_number] = []
@@ -295,7 +299,7 @@ def update_person_position_and_frame(current_frame_persons,person_pos, current_f
 def update_person_frame(current_frame_id,frame_queue,person_pos):
     print("UPDATE PERSON FRAME")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-    global dict_person_assigned_number_frames
+    #global dict_person_assigned_number_frames
     for assigned_number in list(dict_person_assigned_number_frames.keys()):
         arr = dict_person_assigned_number_frames[assigned_number]
         if len(arr) == 1:
