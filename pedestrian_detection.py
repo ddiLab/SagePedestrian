@@ -12,7 +12,7 @@ import math
 from matplotlib import pyplot as plt
 from numpy.core.fromnumeric import var
 # Need to change parent directory here depending on if the repo is in home directory 
-sys.path.insert(1, './deep-person-reid/')
+sys.path.insert(1, '../deep-person-reid/')
 import torch
 import torchreid
 from torchreid.utils import FeatureExtractor
@@ -137,7 +137,6 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                 print(get_total_person_count(current_frame_persons))
                 
                 print("Assigned number = ", current_frame_persons[current_id].assigned_number)
-                # THIS CODE CAUSES PLATEAU ON DOUBLE ID ANOMALIES
                 if current_person.assigned_number in dict_person_assigned_number_frames:
                     dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number].append(current_person.frame_id)
                     print("Key already exists")
@@ -507,15 +506,28 @@ def main():
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
     pts = get_highlightable_coordinates()# Uses exact crosswalk coordinates as a highlighter for visual aid
 
+    hour_min = 13   #default hour range
+    hour_max = 22
     # Allows user to run the script through command line arguments (.xml files must exist)
     # As of 2/12/2022 - TODO: find a way to get the plot_object_detection script to run constantly so PD can be done easily with CMD line
+    
     if len(sys.argv) < 2:
-        print("\n \nFormat: python pedestrian_detection.py [date1, date2, ...]")
-        print("Where dateN = yyyy/mm/dd ")
+        print("\n \nFormat: python pedestrian_detection.py [hour_min] [hour_max] [date1, date2, ...]")
+        print("Where time_min / max = the hour range, dateN = yyyy/mm/dd ")
+        print("If times are not found, will run hours between 13 and 22.")
         return
+
+    try:
+        hour_min = int(sys.argv[1])
+        hour_max = int(sys.argv[2])
+        for i in range(3, len(sys.argv)):
+            date_arr.append(sys.argv[i])
+    except: 
+        for i in range(1, len(sys.argv)):   #assuming date was entered
+            date_arr.append(sys.argv[i])
+        print("No times found, running default hour range")
+
     # Adds the date the user entered into the main loop that drives the pedestrian detection script
-    for arg in sys.argv:
-        date_arr.append(arg)
 
     dict_person_crossed_the_road = dict()
     dict_person_use_the_crosswalk = dict()
@@ -531,6 +543,10 @@ def main():
     for day in date_arr:
         PATH_TO_IMAGES_DIR = pathlib.Path('/raid/AoT/sage/000048B02D15BC7D/bottom/'+ day + '/')
         TEST_RAW_IMAGE_PATHS = sorted(list(PATH_TO_IMAGES_DIR.rglob("*.jpg")))
+        
+        if len(TEST_RAW_IMAGE_PATHS) < 1:
+            print("No images found.")
+            return
 
         # Nested loop - checks each .jpg image in the sage directory
         for im in TEST_RAW_IMAGE_PATHS:
@@ -546,7 +562,7 @@ def main():
                 formatted = "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year)
                 file_name = file_name.replace('.jpg','')
                 # Checking for valid hours we use
-                if 13 <= var_time_object.hour and var_time_object.hour <= 13: 
+                if hour_min <= var_time_object.hour and var_time_object.hour <= hour_max: 
                     xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/"+file_name+".xml"
                     print(xml_file)
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections'): # adds crosswalk_detections directory
