@@ -41,6 +41,8 @@ def get_highlightable_coordinates():
 # Parse the xml file
 # gets object, bndbox (bounding box for the objects), and check if the object is equal to a person
 # returns list all objects 
+# snow on ground can cause certain object detection errors that give every image a person which means it will be ran
+# dramatically slows down and takes up much more space
 def parse_xml(xml_file):
     final_arr=[]
     tree= ET.parse(xml_file)
@@ -107,7 +109,7 @@ def non_max_suppression_fast(boxes, overlapThresh):
 def get_total_person_count(current_frame_persons):
     global dict_person_assigned_number_frames
     try:
-        return max(dict_person_assigned_number_frames, key=dict_person_assigned_number_frames.get)   
+        return max(dict_person_assigned_number_frames) #key=dict_person_assigned_number_frames.get)   
     except:
         return 0  
 
@@ -131,13 +133,18 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                 print(current_person.assigned_number, "CASE 1")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(
                     current_frame_persons)+1    #ADD 1 TO TOTAL PERSON COUNT BUT DOESN'T UPDATE TOTAL
+                print("New assigned number: ", current_person.assigned_number)
+                print(get_total_person_count(current_frame_persons))
+                
                 print("Assigned number = ", current_frame_persons[current_id].assigned_number)
-
                 if current_person.assigned_number in dict_person_assigned_number_frames:
-                    dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id)
+                    dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number].append(current_person.frame_id)
+                    print("Key already exists")
                 else:
-                    dict_person_assigned_number_frames[current_person.assigned_number] = []
-                    dict_person_assigned_number_frames[current_person.assigned_number].append(current_person.frame_id) 
+                    dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number] = []
+                    dict_person_assigned_number_frames[current_frame_persons[current_id].assigned_number].append(current_person.frame_id)
+                    print("Key was added to dict")
+                print(dict_person_assigned_number_frames)
 
     print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):
@@ -153,9 +160,9 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
                 current_frame_persons[current_id].assigned_number = best_match_number
                 print("Max score > 0.6, assigned number = ", best_match_number)
                 print("Current frame sim score: ", current_frame_sim_score)
-                if current_id in current_frame_sim_score.keys():
-                    if best_match_number in current_frame_sim_score[current_id].values():
-                        del current_frame_sim_score[current_id][best_match_number]
+                #if current_id in current_frame_sim_score.keys():
+                    #if best_match_number in current_frame_sim_score[current_id].values():
+                        #del current_frame_sim_score[current_id][best_match_number]
             else:
                 print(current_frame_persons[current_id].assigned_number, "CASE 3")
                 current_frame_persons[current_id].assigned_number = get_total_person_count(current_frame_persons)+1
@@ -271,7 +278,7 @@ def assign_numbers_to_person(frame_queue, current_frame_persons, total_person_co
 def update_person_position_and_frame(current_frame_persons,person_pos, current_frame_id ):
     print("UPDATE PERSON POSITION AND FRAME")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-    global dict_person_assigned_number_frames
+    #global dict_person_assigned_number_frames
     for current_person in current_frame_persons:
         if current_person.assigned_number not in person_pos:
             person_pos[current_person.assigned_number] = []
@@ -291,7 +298,7 @@ def update_person_position_and_frame(current_frame_persons,person_pos, current_f
 def update_person_frame(current_frame_id,frame_queue,person_pos):
     print("UPDATE PERSON FRAME")
     print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-    global dict_person_assigned_number_frames
+    #global dict_person_assigned_number_frames
     for assigned_number in list(dict_person_assigned_number_frames.keys()):
         arr = dict_person_assigned_number_frames[assigned_number]
         if len(arr) == 1:
@@ -488,6 +495,7 @@ def main():
     global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
     current_frame_persons=[]
     count = 0
+    second_count = 0
     person_id=1
     total_person_count=0
     frame_id=0
@@ -498,15 +506,28 @@ def main():
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
     pts = get_highlightable_coordinates()# Uses exact crosswalk coordinates as a highlighter for visual aid
 
+    hour_min = 13   #default hour range
+    hour_max = 22
     # Allows user to run the script through command line arguments (.xml files must exist)
     # As of 2/12/2022 - TODO: find a way to get the plot_object_detection script to run constantly so PD can be done easily with CMD line
+    
     if len(sys.argv) < 2:
-        print("\n \nFormat: python pedestrian_detection.py [date1, date2, ...]")
-        print("Where dateN = yyyy/mm/dd ")
+        print("\n \nFormat: python pedestrian_detection.py [hour_min] [hour_max] [date1, date2, ...]")
+        print("Where time_min / max = the hour range, dateN = yyyy/mm/dd ")
+        print("If times are not found, will run hours between 13 and 22.")
         return
+
+    try:
+        hour_min = int(sys.argv[1])
+        hour_max = int(sys.argv[2])
+        for i in range(3, len(sys.argv)):
+            date_arr.append(sys.argv[i])
+    except: 
+        for i in range(1, len(sys.argv)):   #assuming date was entered
+            date_arr.append(sys.argv[i])
+        print("No times found, running default hour range")
+
     # Adds the date the user entered into the main loop that drives the pedestrian detection script
-    for arg in sys.argv:
-        date_arr.append(arg)
 
     dict_person_crossed_the_road = dict()
     dict_person_use_the_crosswalk = dict()
@@ -522,6 +543,10 @@ def main():
     for day in date_arr:
         PATH_TO_IMAGES_DIR = pathlib.Path('/raid/AoT/sage/000048B02D15BC7D/bottom/'+ day + '/')
         TEST_RAW_IMAGE_PATHS = sorted(list(PATH_TO_IMAGES_DIR.rglob("*.jpg")))
+        
+        if len(TEST_RAW_IMAGE_PATHS) < 1:
+            print("No images found.")
+            return
 
         # Nested loop - checks each .jpg image in the sage directory
         for im in TEST_RAW_IMAGE_PATHS:
@@ -537,7 +562,7 @@ def main():
                 formatted = "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year)
                 file_name = file_name.replace('.jpg','')
                 # Checking for valid hours we use
-                if 13 <= var_time_object.hour and var_time_object.hour <= 13: 
+                if hour_min <= var_time_object.hour and var_time_object.hour <= hour_max: 
                     xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/"+file_name+".xml"
                     print(xml_file)
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections'): # adds crosswalk_detections directory
@@ -556,6 +581,8 @@ def main():
 
                         # Check to see if a person is actually in the image 
                         if len(person_coordinates)>0:
+                            count = 0
+                            second_count = 0
                             print("Printing person coordinates: ", person_coordinates)
                             img_original = cv2.imread(str(im))   # img_original now holds the image
                             img_c = img_original.copy()          # a copy of the original
@@ -596,7 +623,7 @@ def main():
                                     # if person_id> 100000:
                                     #     person_id=1
                                 else: 
-                                    if len(frame_queue) > 0 and frame_counter % 5 == 0:
+                                    if len(frame_queue) > 0 and frame_counter % 5 == 0 and frame_counter != 0:
                                         frame_queue.popleft()
                                         frame_counter = 0
 
@@ -666,8 +693,10 @@ def main():
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
                             print("\n\n") 
                         else:
+                            second_count += 1
+                            max_second_count = 5
                             frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
-                            if len(frame_queue) > 0:
+                            if len(frame_queue) > 0 and second_count > max_second_count: #wait at least 5 seconds before popping
                                 frame_queue.popleft() #should remove old data from queue over large time gaps
             except Exception as e:
                 print("Exception thrown:", str(e))
@@ -693,30 +722,30 @@ def main():
     # Create .csv files - used for tracing trajectories or other analytical jobs
     # create file with people and their coordinates
     import csv
-    a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w")
+    a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w+")
     writer = csv.writer(a_file)
     for key, value in person_pos.items():
         writer.writerow([key, value])
     a_file.close()
 
-    # Print still image of hourly crosswalk trajectories
-    print("Tracing trajectories...")
-    from plot_lines import draw_lines
-    draw_lines(var_date_str)
-
     # Save assigned number of frames per person
-    b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w")
+    b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w+")
     writer = csv.writer(b_file)
     for key, value in dict_person_assigned_number_frames.items():
         writer.writerow([key, value])
     b_file.close()
 
     # Save frame timestamps
-    c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w")
+    c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w+")
     writer = csv.writer(c_file)
     for key, value in dict_frame_time_stamp.items():
         writer.writerow([key, value])
     c_file.close()
+
+    # Print still image of hourly crosswalk trajectories
+    print("Tracing trajectories...")
+    from plot_lines import draw_lines
+    draw_lines(var_date_str)
 
 
 if __name__ == '__main__':

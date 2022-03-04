@@ -1,3 +1,10 @@
+# TO RUN THIS SCRIPT IN THE BACKGROUND DO THE FOLLOWING COMMANDS:
+# 1) python plot_object_detection.py
+# 2) CTRL + Z
+# 3) bg
+# 4) jobs
+# 5) disown %JOB NUMBER HERE
+
 #!/usr/bin/env python
 # coding: utf-8
 """
@@ -29,10 +36,29 @@ for gpu in gpus:
 #We need to get the images captured by the sage node
 IMAGE_PATHS = []
 
-#image director
-temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/2021/08/31/"
-#output directory
-xml_output_dir = "/raid/AoT/image_label_xmls/08-31-2021/new_xmls/"
+# Check to see if the user wants a specific date ran, otherwise the default is the current date
+import sys
+output_dir_date = ""
+if len(sys.argv) > 2: # wrong number of arguments
+    print("\n Format: python plot_object_detection.py date")
+    print("Where date = yyyy/mm/dd ")
+    quit()
+if len(sys.argv) == 2: # have an input date
+    current_date = sys.argv[1] + "/"
+    output_dir_date = sys.argv[1]
+    new_dir = sys.argv[1]
+    new_dir = new_dir.split("/")
+    output_dir_date = new_dir[1] + "-" + new_dir[2] + "-" + new_dir[0] + "/" # reformatting to output format
+now = datetime.now()
+month = "%02d" % (now.month)
+day = "%02d" % (now.day)
+year = "%04d" % (now.year)
+if len(sys.argv) == 1: # default to current time
+   current_date = year + "/" + month + "/" + day + "/"
+   output_dir_date = month + "-" + day + "-" + year + "/"
+
+temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/" + current_date
+xml_output_dir = "/raid/AoT/image_label_xmls/" + output_dir_date # directory is created if it does not exist later
 
 for filename in os.listdir(temp_image_dir):
     for picture in os.listdir(temp_image_dir + filename):
@@ -101,8 +127,6 @@ from object_detection.utils import label_map_util
 from object_detection.utils import config_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
-# USED TO TRACK HOW LONG A SCRIPT IS RUNNING FOR IN END EQUATION
-START_OF_SCRIPT = time.time()
 
 PATH_TO_CFG = PATH_TO_MODEL_DIR + "/pipeline.config"
 PATH_TO_CKPT = PATH_TO_MODEL_DIR + "/checkpoint"
@@ -132,9 +156,6 @@ def detect_fn(image):
 end_time = time.time()
 elapsed_time = end_time - start_time
 print('Done! Took {} seconds'.format(elapsed_time))
-
-
-
 
 # check predict and post processing
 # raise to 75 threshold
@@ -227,8 +248,9 @@ def write_label_xmls(model, image_path):
     var_date_str, var_time_str = var_date_time[0], var_date_time[1]
     var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
     var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
+    xml_output_dir = "/raid/AoT/image_label_xmls/" + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year) + "/"
     # specify the hours of the day you wish to run
-    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 22:
+    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 13: # change this 13 to run more than 1 hour
         image_np = np.array(Image.open(image_path))
         # Actual detection.
         output_dict = run_inference_for_single_image(model, image_np)
@@ -251,13 +273,10 @@ def write_label_xmls(model, image_path):
         path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml")
         writer.save(path_to_xml)
 
-for image_path in IMAGE_PATHS:
+if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
+    os.mkdir(xml_output_dir)
+
+for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
     if pathlib.Path(xml_path).is_file() is False:
         write_label_xmls(detection_model, image_path)
-
-# sphinx_gallery_thumbnail_number = 2
-# tracks the end time of the script
-END_OF_SCRIPT = time.time()
-# print the overall runtime of the object detection code for however many hours are specified
-print("RUNTIME: ", (END_OF_SCRIPT - START_OF_SCRIPT) / 120, " HOURS")
