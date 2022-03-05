@@ -487,29 +487,6 @@ def color_the_person_box(img_original, assigned_number, person_pos, person_cords
         
     return img_original, dict_person_crossed_the_road, dict_person_use_the_crosswalk
 
-image_list=[]  # Array the holds the new images created from this script 
-global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
-count = 0
-second_count = 0
-person_id=1
-total_person_count=0
-frame_id=0
-frame_counter = 0
-frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
-person_pos = dict()
-frame_record = recordtype("frame_record", "frame_id person_records")
-person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
-pts = get_highlightable_coordinates()# Uses exact crosswalk coordinates as a highlighter for visual aid
-
-dict_person_crossed_the_road = dict()
-dict_person_use_the_crosswalk = dict()
-dict_person_assigned_number_frames = dict()
-dict_frame_time_stamp = dict()
-
-size = (0,0) # Used in creating a .mp4 video at the end of the script
-
-max_person_count=0
-
 def write_dictionary_files(var_date_str):
     # Create .csv files - used for tracing trajectories or other analytical jobs
     # create file with people and their coordinates
