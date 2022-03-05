@@ -40,6 +40,6 @@ Deep Re-id: https://github.com/KaiyangZhou/deep-person-reid
 
  - If you are running a specified day on the plot_object_detection.py script and want it to run in the background, follow the steps commented at the top of that file
 
-![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/line_result.JPG?raw=true)
+![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/line_result.jpg?raw=true)
 
 *This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
