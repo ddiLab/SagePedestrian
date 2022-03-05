@@ -157,9 +157,6 @@ end_time = time.time()
 elapsed_time = end_time - start_time
 print('Done! Took {} seconds'.format(elapsed_time))
 
-# check predict and post processing
-# raise to 75 threshold
-
 # %%
 # Load label map data (for plotting)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -248,9 +245,12 @@ def write_label_xmls(model, image_path):
     var_date_str, var_time_str = var_date_time[0], var_date_time[1]
     var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
     var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
+    hour = var_time_object.hour
+    formatted_date = str(var_date_object.year) + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" 
     xml_output_dir = "/raid/AoT/image_label_xmls/" + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year) + "/"
+    
     # specify the hours of the day you wish to run
-    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 13: # change this 13 to run more than 1 hour
+    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 22: # change this 13 to run more than 1 hour
         image_np = np.array(Image.open(image_path))
         # Actual detection.
         output_dict = run_inference_for_single_image(model, image_np)
@@ -272,11 +272,20 @@ def write_label_xmls(model, image_path):
 
         path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml")
         writer.save(path_to_xml)
+        return path_to_xml, hour, formatted_date
+        #print("Done: ", os.path.basename(path_to_xml))
 
 if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
     os.mkdir(xml_output_dir)
 
+counter = 1
+hour = 13
+date = ""
 for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
     if pathlib.Path(xml_path).is_file() is False:
-        write_label_xmls(detection_model, image_path)
+        file_path, hour, date = write_label_xmls(detection_model, image_path)
+    counter += 1
+    if counter >= 3600: #3600 images per hour
+        from subprocess import Popen
+        Popen(['python', 'pedestrian_detection.py', hour, hour, date])
