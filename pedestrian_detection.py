@@ -516,13 +516,6 @@ def write_dictionary_files(var_date_str):
     from plot_lines import draw_lines
     draw_lines(var_date_str)
 
-#This function is called when we need to reset
-#every data structure and counter (eg: we want to start a new day.)
-def start_new_day():
-    image_list = []
-    date_arr = []
-    global
-
 #processes a single image output by the object_detection script based on the path im.
 def parse_image(im):
     try:
