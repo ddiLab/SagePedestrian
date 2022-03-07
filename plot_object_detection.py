@@ -245,8 +245,10 @@ def write_label_xmls(model, image_path):
     var_date_str, var_time_str = var_date_time[0], var_date_time[1]
     var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
     var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
+    
     hour = var_time_object.hour
-    formatted_date = str(var_date_object.year) + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" 
+    formatted_date = str(var_date_object.year) + "/" + "{:02d}".format(var_date_object.month) + "/" + "{:02d}".format(var_date_object.day)
+    
     xml_output_dir = "/raid/AoT/image_label_xmls/" + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year) + "/"
     
     # specify the hours of the day you wish to run
@@ -272,20 +274,20 @@ def write_label_xmls(model, image_path):
 
         path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml")
         writer.save(path_to_xml)
-        return path_to_xml, hour, formatted_date
+        return hour, formatted_date
         #print("Done: ", os.path.basename(path_to_xml))
 
 if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
     os.mkdir(xml_output_dir)
 
-counter = 1
 hour = 13
-date = ""
+last_hour = hour
+date = " "
 for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
     if pathlib.Path(xml_path).is_file() is False:
-        file_path, hour, date = write_label_xmls(detection_model, image_path)
-    counter += 1
-    if counter >= 3600: #3600 images per hour
+        hour, date = write_label_xmls(detection_model, image_path)
+    if last_hour != hour: #hour has changed
         from subprocess import Popen
-        Popen(['python', 'pedestrian_detection.py', hour, hour, date])
+        Popen(['python', 'pedestrian_detection.py', last_hour, last_hour, date]) #use popen to start a new process
+        last_hour = hour
