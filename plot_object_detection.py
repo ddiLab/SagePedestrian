@@ -236,6 +236,10 @@ def run_inference_for_single_image(model, image):
         output_dict['detection_masks_reframed'] = detection_masks_reframed.numpy()
     return output_dict
 
+file_hour = 13
+last_hour = file_hour
+file_date = " "
+
 def write_label_xmls(model, image_path):
     # the array based representation of the image will be used later in order to prepare the
     # result image with boxes and labels on it.
@@ -246,8 +250,8 @@ def write_label_xmls(model, image_path):
     var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
     var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
     
-    hour = var_time_object.hour
-    formatted_date = str(var_date_object.year) + "/" + "{:02d}".format(var_date_object.month) + "/" + "{:02d}".format(var_date_object.day)
+    file_hour = var_time_object.hour
+    file_date = str(var_date_object.year) + "/" + "{:02d}".format(var_date_object.month) + "/" + "{:02d}".format(var_date_object.day)
     
     xml_output_dir = "/raid/AoT/image_label_xmls/" + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year) + "/"
     
@@ -274,20 +278,16 @@ def write_label_xmls(model, image_path):
 
         path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml")
         writer.save(path_to_xml)
-        return hour, formatted_date
         #print("Done: ", os.path.basename(path_to_xml))
 
 if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
     os.mkdir(xml_output_dir)
 
-hour = 13
-last_hour = hour
-date = " "
 for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
     if pathlib.Path(xml_path).is_file() is False:
-        hour, date = write_label_xmls(detection_model, image_path)
-    if last_hour != hour: #hour has changed
+        write_label_xmls(detection_model, image_path)
+    if last_hour != file_hour: #hour has changed
         from subprocess import Popen
-        Popen(['python', 'pedestrian_detection.py', last_hour, last_hour, date]) #use popen to start a new process
-        last_hour = hour
+        Popen(['python', 'pedestrian_detection.py', last_hour, last_hour, file_date]) #use popen to start a new process
+        last_hour = file_hour
