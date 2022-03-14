@@ -10,7 +10,7 @@ import sys
 import math
 from numpy.core.fromnumeric import var
 # Need to change parent directory here depending on if the repo is in home directory 
-sys.path.insert(1, '../deep-person-reid/')
+sys.path.insert(1, './deep-person-reid/')
 import torch
 import torchreid
 from torchreid.utils import FeatureExtractor
@@ -875,8 +875,33 @@ def main():
     with open('frame_timestamps_2021-10-04.pickle', 'wb') as handle3:
         pickle.dump(dict_frame_time_stamp, handle3, protocol=pickle.HIGHEST_PROTOCOL)
 
-    #write the dictionary information to files for saving & processing
-    write_dictionary_files(var_date_str)
+    # Create .csv files - used for tracing trajectories or other analytical jobs
+    # create file with people and their coordinates
+    import csv
+    a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w+")
+    writer = csv.writer(a_file)
+    for key, value in person_pos.items():
+        writer.writerow([key, value])
+    a_file.close()
+
+    # Save assigned number of frames per person
+    b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w+")
+    writer = csv.writer(b_file)
+    for key, value in dict_person_assigned_number_frames.items():
+        writer.writerow([key, value])
+    b_file.close()
+
+    # Save frame timestamps
+    c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w+")
+    writer = csv.writer(c_file)
+    for key, value in dict_frame_time_stamp.items():
+        writer.writerow([key, value])
+    c_file.close()
+
+    # Print still image of hourly crosswalk trajectories
+    print("Tracing trajectories...")
+    from plot_lines import draw_lines
+    draw_lines(var_date_str)
 
 
 if __name__ == '__main__':

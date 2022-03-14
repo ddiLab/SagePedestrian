@@ -280,18 +280,16 @@ def write_label_xmls(model, image_path):
         print("Done: ", os.path.basename(path_to_xml))
         print("Hour: ", file_hour)
 
-    return var_time_object.hour
+    return var_time_object.hour, file_date
 
 if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
     os.mkdir(xml_output_dir)
 
 for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
-    print(xml_path)
     if pathlib.Path(xml_path).is_file() is False:
-        file_hour = write_label_xmls(detection_model, image_path)
-
-    if file_hour - last_hour != 0: #hour has changed
-        from subprocess import Popen
-        #Popen(['python', 'pedestrian_detection.py', last_hour, last_hour, file_date]) #use popen to start a new process
-        last_hour = file_hour
+        file_hour, file_date = write_label_xmls(detection_model, image_path)
+        if file_hour - last_hour != 0 and file_hour >= 13: #hour has changed
+            from subprocess import Popen
+            Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #use popen to start a new process
+            last_hour = file_hour
