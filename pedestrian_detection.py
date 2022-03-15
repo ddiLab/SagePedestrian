@@ -712,6 +712,7 @@ def main():
                 file_name = os.path.basename(im)
                 var_date_time = file_name[:len(file_name)-4].split("T")
                 var_date_str, var_time_str = var_date_time[0], var_date_time[1]
+                #print(var_date_str)
                 # print("printing var date str: ", var_date_str, " -> end of var date str")
                 var_time_str = var_time_str.replace('+0000','')
                 var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")

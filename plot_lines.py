@@ -7,9 +7,14 @@ import time
 
 def draw_lines(date):
     import csv
+    #date format: Yyyy-Mm-Dd
+    #strip date
+    var_date_object = datetime.strptime(date, "%Y-%m-%d")
+    formatted = str(var_date_object.year) + "/" +  "{:02d}".format(var_date_object.month) + "/" + "{:02d}".format(var_date_object.day) + "/13/"
+
     #generic image for overlaying
     #eventually take in name of file
-    im_path = pathlib.Path('/raid/AoT/sage/000048B02D15BC7D/bottom/2021/09/02/17/2021-09-02T17:00:00+0000.jpg')
+    im_path = pathlib.Path('/raid/AoT/sage/000048B02D15BC7D/bottom/' + formatted + date + 'T13:00:00+0000.jpg')
     image = cv2.imread(str(im_path))
     image_copy = image.copy()
 
