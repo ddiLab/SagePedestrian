@@ -255,7 +255,7 @@ def write_label_xmls(model, image_path):
     xml_output_dir = "/raid/AoT/image_label_xmls/" + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year) + "/"
     
     # specify the hours of the day you wish to run
-    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 22: # change this 13 to run more than 1 hour
+    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 14: # change this 13 to run more than 1 hour
         image_np = np.array(Image.open(image_path))
         # Actual detection.
         output_dict = run_inference_for_single_image(model, image_np)
@@ -280,16 +280,21 @@ def write_label_xmls(model, image_path):
         print("Done: ", os.path.basename(path_to_xml))
         print("Hour: ", file_hour)
 
-    return var_time_object.hour, file_date
+        return var_time_object.hour, file_date, True    #return true if the file was processed
+
+    return var_time_object.hour, file_date, False   #return false since the file was not processed
 
 if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
     os.mkdir(xml_output_dir)
 
+from subprocess import Popen
+
 for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
     if pathlib.Path(xml_path).is_file() is False:
-        file_hour, file_date = write_label_xmls(detection_model, image_path)
-        if file_hour - last_hour != 0 and file_hour >= 13: #hour has changed
-            from subprocess import Popen
-            Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #use popen to start a new process
+        file_hour, file_date, processed = write_label_xmls(detection_model, image_path)
+        if file_hour != last_hour and file_hour >= 13 and processed: #hour has changed
+            Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #start a new process that processes the new data per hour
             last_hour = file_hour
+
+Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #start a new process that processes the new data per hour
