@@ -647,10 +647,20 @@ def parse_image(im):
 
 #For standalone use: All functionality of pedestrian detection script should remain intact,
 #even when the script is done being modified to work in real time
-def main():
+def main(interval = -1, date = None, plot = False):
     image_list=[]  # Array the holds the new images created from this script 
     date_arr=[]    # Main for loop array
+    
     global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
+    global count
+    global second_count
+    global person_id
+    global total_person_count
+    global frame_id
+    global frame_counter
+    global frame_queue
+    global person_pos
+
     count = 0
     second_count = 0
     person_id=1
@@ -659,6 +669,7 @@ def main():
     frame_counter = 0
     frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
     person_pos = dict()
+
     frame_record = recordtype("frame_record", "frame_id person_records")
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
     pts = get_highlightable_coordinates()# Uses exact crosswalk coordinates as a highlighter for visual aid
@@ -675,10 +686,15 @@ def main():
         return
 
     try:
-        hour_min = int(sys.argv[1])
-        hour_max = int(sys.argv[2])
-        for i in range(3, len(sys.argv)):
-            date_arr.append(sys.argv[i])
+        if interval != -1 and date != None: #called from obj detection
+            hour_min = interval     #1 hour intervals
+            hour_max = interval
+            date_arr.append(date)
+        else:   #standalone with params
+            hour_min = int(sys.argv[1])
+            hour_max = int(sys.argv[2])
+            for i in range(3, len(sys.argv)):
+                date_arr.append(sys.argv[i])
     except: 
         for i in range(1, len(sys.argv)):   #assuming date was entered
             date_arr.append(sys.argv[i])
@@ -899,10 +915,11 @@ def main():
         writer.writerow([key, value])
     c_file.close()
 
-    # Print still image of hourly crosswalk trajectories
-    print("Tracing trajectories...")
-    from plot_lines import draw_lines
-    draw_lines(var_date_str)
+    if plot:
+        # Print still image of hourly crosswalk trajectories
+        print("Tracing trajectories...")
+        from plot_lines import draw_lines
+        draw_lines(var_date_str)
 
 
 if __name__ == '__main__':
