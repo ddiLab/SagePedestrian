@@ -296,13 +296,13 @@ count = 0
 
 for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
-    if pathlib.Path(xml_path).is_file() is False:
-        file_hour, file_date, processed = write_label_xmls(detection_model, image_path)
-        if file_hour != last_hour and file_hour >= 13 and processed: #hour has changed
-            #Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #start a new process that processes the new data per hour
-            pedestrian_detection.main(last_hour, file_date, False, count==0)
-            last_hour = file_hour
-            count += 1
+    #if pathlib.Path(xml_path).is_file() is False:
+    file_hour, file_date, processed = write_label_xmls(detection_model, image_path)
+    if file_hour != last_hour and file_hour >= 13 and processed: #hour has changed
+        #Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #start a new process that processes the new data per hour
+        pedestrian_detection.main(last_hour, file_date, False, count==0)
+        last_hour = file_hour
+        count += 1
 
 pedestrian_detection.main(last_hour, file_date, True, False)   #Runs plot_lines
 #Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #start a new process that processes the new data per hour

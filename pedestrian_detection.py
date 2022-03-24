@@ -22,6 +22,20 @@ import sympy
 import pickle
 import time
 
+count = 0
+second_count = 0
+person_id=1
+total_person_count=0
+frame_id=0
+frame_counter = 0
+frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
+person_pos = dict()
+dict_person_crossed_the_road = dict()
+dict_person_use_the_crosswalk = dict()
+dict_person_assigned_number_frames = dict()
+dict_frame_time_stamp = dict()
+max_person_count=0
+
 # CONTAINS MODEL - IF WANTING TO CHANGE MODELS CHANGE THE "model_name" variable
 extractor = FeatureExtractor(model_name='osnet_x1_0', model_path='./model.pth.tar', device='cuda')
 
@@ -516,137 +530,6 @@ def write_dictionary_files(var_date_str):
     from plot_lines import draw_lines
     draw_lines(var_date_str)
 
-#processes a single image output by the object_detection script based on the path im.
-def parse_image(im):
-    try:
-    # Get the name of the .jpg file and strip the unneccesary mumbo jumbo
-        file_name = os.path.basename(im)
-        var_date_time = file_name[:len(file_name)-4].split("T")
-        var_date_str, var_time_str = var_date_time[0], var_date_time[1]
-        var_time_str = var_time_str.replace('+0000','')
-        var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
-        var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
-        formatted = "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year)
-        file_name = file_name.replace('.jpg','')
-        
-        #check and see if new day
-        #if so we need to reset the data structures that track people and frame values
-
-        xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/"+file_name+".xml"
-        print(xml_file)
-        if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections'): # adds crosswalk_detections directory
-            os.mkdir('/raid/AoT/image_label_xmls/crosswalk_detections')
-        if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str): # adds day to directory
-            os.mkdir('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str)
-        if os.path.exists(xml_file):
-            frame_id+=1
-            frame_rec = frame_record(0,0)
-            frame_rec.frame_id = frame_id
-            current_frame_persons=[]
-                        
-            person_coordinates = parse_xml(xml_file)                                        # get the coordinates for a person in the picture
-            person_coordinates = non_max_suppression_fast(np.array(person_coordinates),0.3) # Supress extra boxes around objects
-
-            # Check to see if a person is actually in the image 
-            if len(person_coordinates)>0:
-                count = 0
-                second_count = 0
-                #print("Printing person coordinates: ", person_coordinates)
-                img_original = cv2.imread(str(im))   # img_original now holds the image
-                img_c = img_original.copy()          # a copy of the original
-                temp_arr=[]
-                # and to see if the area of the persons bounding box is greater than 2200 pixels
-                # person : xmin, xmax, ymin, ymax of person                          
-                for person in person_coordinates:
-                    frame_counter += 1
-                    if person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1800:
-                        if frame_id not in dict_frame_time_stamp:
-                            dict_frame_time_stamp[frame_id] = var_date_time
-                        print("Person: ", person , " - end person print")
-                        img = img_original[person[1]:person[3], person[0]:person[2]]
-                        person_rec = person_record(0,-1,0,0,0,0)
-                        person_rec.person_id = person_id
-                        person_rec.frame_id = frame_rec.frame_id 
-            #                         print(np.average([person[0],person[2]]))
-                                    #print("xml file",xml_file) # Debugging purposes
-                        person_rec.center_cords = [int(np.average([person[0],person[2]])), person[3]] # finds the center of the bounding box
-                        print("center coords: ", person_rec.center_cords)
-                        person_rec.feature = extractor(img)
-                        current_frame_persons.append(person_rec)
-                        temp_arr.append([person_id, person[0],person[1], person[2], person[3]])
-                        person_id+=1
-                    else: 
-                        if len(frame_queue) > 0 and frame_counter % 5 == 0 and frame_counter != 0:
-                            frame_queue.popleft()
-                            frame_counter = 0
-
-            #                 frame_queue, person_pos=update_person_frame(frame_id,frame_queue, person_pos)        
-                assign_numbers_to_person(frame_queue, current_frame_persons, total_person_count)
-                            
-                person_pos = update_person_position_and_frame(current_frame_persons, person_pos, frame_rec.frame_id)
-            #                 print(person_pos)
-                frame_queue, person_pos = update_person_frame(frame_id,frame_queue, person_pos)
-                total_person_count = get_total_person_count(current_frame_persons)
-                            
-                for curr_person in current_frame_persons:
-                    person_cross_the_road = did_person_cross_the_road(curr_person.assigned_number,person_pos)
-                    if person_cross_the_road:
-                        print(curr_person.assigned_number, 
-                            did_person_use_the_crosswalk(person_pos[curr_person.assigned_number], pts))
-
-                            # fills the crosswalk GREEN
-                cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
-                            # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
-                            # draw lines that people will be checked for crossing - RED
-                cv2.line(img_original,(0,860),(2550,700),(0,0,255),8)
-                cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
-                            # give transparency to the crosswalk and road lines
-                img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
-
-                frame_rec.person_records = current_frame_persons
-                frame_queue.append(frame_rec)
-                for val in temp_arr:
-                    for p_id, p_val in enumerate(current_frame_persons):
-                        if current_frame_persons[p_id].person_id == val[0]:
-                            img_new, dict_person_crossed_the_road, dict_person_use_the_crosswalk = color_the_person_box(img_new, 
-                                                current_frame_persons[p_id].assigned_number, 
-                                                person_pos, 
-                                                person_pos[current_frame_persons[p_id].assigned_number], 
-                                                pts,
-                                                val,
-                                                dict_person_crossed_the_road,
-                                                dict_person_use_the_crosswalk)
-                                        # Write the assigned number onto the image next to the person - IN BLUE
-                            cv2.putText(
-                                img_new, str(
-                                    current_frame_persons[p_id].assigned_number), (
-                                    val[1],val[2]-30), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,255), 5)
-
-                            # Writing onto the image original person count, person used road or crosswalk stated - NOT weighted
-                cv2.putText(img_new, "Person count = "+ str(total_person_count), (
-                                    50, 120), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)
-                cv2.putText(img_new, "Person crossed road = "+ str(len(dict_person_crossed_the_road)), (
-                                    50, 260), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)  
-                cv2.putText(img_new, "Person used crosswalk = "+ str(len(dict_person_use_the_crosswalk)), (
-                                    50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)                      
-
-                            # used for video writer
-                height, width, layers = img_new.shape
-                size = (width,height)
-                image_list.append(img_new)
-                            # Saves file with writing to the path - ALL .JPGS NOW STORED IN CROSSWALK DETECTIONS
-                cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
-            else:
-                second_count += 1
-                max_second_count = 5
-                frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
-                if len(frame_queue) > 0 and second_count > max_second_count: #wait at least 5 seconds before popping
-                    frame_queue.popleft() #should remove old data from queue over large time gaps
-    except Exception as e:
-        print("Exception thrown:", str(e))
-
-
-
 #For standalone use: All functionality of pedestrian detection script should remain intact,
 #even when the script is done being modified to work in real time
 def main(interval = -1, date = None, plot = False, initial=True):
@@ -690,7 +573,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
     # Allows user to run the script through command line arguments (.xml files must exist)
     # As of 2/12/2022 - TODO: find a way to get the plot_object_detection script to run constantly so PD can be done easily with CMD line
     
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2 and interval == -1:
         print("\n \nFormat: python pedestrian_detection.py [hour_min] [hour_max] [date1, date2, ...]")
         print("Where time_min / max = the hour range, dateN = yyyy/mm/dd ")
         print("If times are not found, will run hours between 13 and 22.")
