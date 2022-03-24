@@ -645,9 +645,11 @@ def parse_image(im):
     except Exception as e:
         print("Exception thrown:", str(e))
 
+
+
 #For standalone use: All functionality of pedestrian detection script should remain intact,
 #even when the script is done being modified to work in real time
-def main(interval = -1, date = None, plot = False):
+def main(interval = -1, date = None, plot = False, initial=True):
     image_list=[]  # Array the holds the new images created from this script 
     date_arr=[]    # Main for loop array
     
@@ -660,15 +662,24 @@ def main(interval = -1, date = None, plot = False):
     global frame_counter
     global frame_queue
     global person_pos
+    global max_person_count
 
-    count = 0
-    second_count = 0
-    person_id=1
-    total_person_count=0
-    frame_id=0
-    frame_counter = 0
-    frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
-    person_pos = dict()
+    if initial:
+        count = 0
+        second_count = 0
+        person_id=1
+        total_person_count=0
+        frame_id=0
+        frame_counter = 0
+        frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
+        person_pos = dict()
+        dict_person_crossed_the_road = dict()
+        dict_person_use_the_crosswalk = dict()
+        dict_person_assigned_number_frames = dict()
+        dict_frame_time_stamp = dict()
+        max_person_count=0
+
+    size = (0,0) # Used in creating a .mp4 video at the end of the script
 
     frame_record = recordtype("frame_record", "frame_id person_records")
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
@@ -702,15 +713,7 @@ def main(interval = -1, date = None, plot = False):
 
     # Adds the date the user entered into the main loop that drives the pedestrian detection script
 
-    dict_person_crossed_the_road = dict()
-    dict_person_use_the_crosswalk = dict()
-    dict_person_assigned_number_frames = dict()
-    dict_frame_time_stamp = dict()
-
-    size = (0,0) # Used in creating a .mp4 video at the end of the script
-
-    global max_person_count
-    max_person_count=0
+    
 
     # Driver loop - based off of the days the user has entered as a CMD line argument
     for day in date_arr:
@@ -883,14 +886,14 @@ def main(interval = -1, date = None, plot = False):
     out.release()
 
     # dont worry about, used for extraction later on
-    with open('person_cords_2021-10-04.pickle', 'wb') as handle1:
-        pickle.dump(person_pos, handle1, protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('person_cords_2021-10-04.pickle', 'wb') as handle1:
+        #pickle.dump(person_pos, handle1, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('person_frames_2021-10-04.pickle', 'wb') as handle2:
-        pickle.dump(dict_person_assigned_number_frames, handle2, protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('person_frames_2021-10-04.pickle', 'wb') as handle2:
+        #pickle.dump(dict_person_assigned_number_frames, handle2, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open('frame_timestamps_2021-10-04.pickle', 'wb') as handle3:
-        pickle.dump(dict_frame_time_stamp, handle3, protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('frame_timestamps_2021-10-04.pickle', 'wb') as handle3:
+        #pickle.dump(dict_frame_time_stamp, handle3, protocol=pickle.HIGHEST_PROTOCOL)
 
     # Create .csv files - used for tracing trajectories or other analytical jobs
     # create file with people and their coordinates
