@@ -1,5 +1,0 @@
-SHELL=/bin/bash
-BASH_ENV=~/.bashrc_conda
-
-13 21 * * * conda activate /home/wesley/.conda/pip_test; python /home/wesley/SagePedestrian/plot_object_detection.py > /home/wesley/output.txt; cond$
-
