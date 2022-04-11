@@ -4,7 +4,7 @@
 # 3) bg
 # 4) jobs
 # 5) disown %JOB NUMBER HERE
-
+#!/home/users/justind/.conda/envs/tf_gpu/bin/
 #!/usr/bin/env python
 # coding: utf-8
 """

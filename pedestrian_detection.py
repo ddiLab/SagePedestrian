@@ -388,10 +388,10 @@ def check_in_image_box(point):
         
 # GLOBAL VARIABLES TO FIND LINES ON THE ROAD
 # Slopes found using (y2-y1)/(x2-x1) - points found by looking at road 
-north_road_slope = .0684754522
-north_ycoord = 870
-south_road_slope = 0.0933
-south_ycoord = 1025
+north_road_slope = .046557
+north_ycoord = 845
+south_road_slope = 0.092480
+south_ycoord = 1042
 
 # sometimes returns true when it shouldnt
 def did_person_cross_the_road(assigned_number, person_pos):
