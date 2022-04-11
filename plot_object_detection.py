@@ -257,7 +257,7 @@ def write_label_xmls(model, image_path):
     xml_output_dir = "/raid/AoT/image_label_xmls/" + "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year) + "/"
     
     # specify the hours of the day you wish to run
-    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 14 and var_time_object.minute >= 59: # change this 13 to run more than 1 hour
+    if var_date_object.day > 0 and var_date_object.month >= 0 and 13 <= var_time_object.hour <= 22: # change this 13 to run more than 1 hour
         image_np = np.array(Image.open(image_path))
         # Actual detection.
         output_dict = run_inference_for_single_image(model, image_np)
