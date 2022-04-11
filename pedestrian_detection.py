@@ -388,10 +388,10 @@ def check_in_image_box(point):
         
 # GLOBAL VARIABLES TO FIND LINES ON THE ROAD
 # Slopes found using (y2-y1)/(x2-x1) - points found by looking at road 
-north_road_slope = .046557
+north_road_slope =  0 - 0.03671875
 north_ycoord = 845
-south_road_slope = 0.092480
-south_ycoord = 1042
+south_road_slope = 0 - 0.0882352941176
+south_ycoord = 1025
 
 # sometimes returns true when it shouldnt
 def did_person_cross_the_road(assigned_number, person_pos):
@@ -652,7 +652,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             # person : xmin, xmax, ymin, ymax of person                          
                             for person in person_coordinates:
                                 frame_counter += 1
-                                if person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1800:
+                                if person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1750:
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
                                     print("Person: ", person , " - end person print")
@@ -712,7 +712,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
                             # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
                             # draw lines that people will be checked for crossing - RED
-                            cv2.line(img_original,(0,860),(2550,700),(0,0,255),8)
+                            cv2.line(img_original,(0,845),(2560,755),(0,0,255),8)
                             cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
                             # give transparency to the crosswalk and road lines
                             img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)

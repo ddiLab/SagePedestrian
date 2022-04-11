@@ -95,7 +95,8 @@ def download_model(model_name, model_date):
 MODEL_DATE = '20200711'
 # model can be swapped out for higher accuracy but not needed because we only need people detections
 # As of 10/31/2021, we have noticed a problem with the lighting and directories in the images - problems for the model detection
-MODEL_NAME = 'centernet_hg104_1024x1024_coco17_tpu-32'
+MODEL_NAME = 'efficientdet_d4_coco17_tpu-32'
+#MODEL_NAME = 'centernet_hg104_1024x1024_coco17_tpu-32'
 PATH_TO_MODEL_DIR = download_model(MODEL_NAME, MODEL_DATE)
 
 # %%
