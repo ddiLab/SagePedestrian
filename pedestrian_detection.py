@@ -388,9 +388,9 @@ def check_in_image_box(point):
         
 # GLOBAL VARIABLES TO FIND LINES ON THE ROAD
 # Slopes found using (y2-y1)/(x2-x1) - points found by looking at road 
-north_road_slope =  0 - 0.03671875
-north_ycoord = 845
-south_road_slope = 0 - 0.0882352941176
+north_road_slope = 0.037109375
+north_ycoord = 830
+south_road_slope = 0.0882352941176
 south_ycoord = 1025
 
 # sometimes returns true when it shouldnt
@@ -712,7 +712,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
                             # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
                             # draw lines that people will be checked for crossing - RED
-                            cv2.line(img_original,(0,845),(2560,755),(0,0,255),8)
+                            cv2.line(img_original,(0,830),(2560,735),(0,0,255),8)
                             cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
                             # give transparency to the crosswalk and road lines
                             img_new = cv2.addWeighted(img_c, 0.3, img_original, 1 - 0.3, 0)
