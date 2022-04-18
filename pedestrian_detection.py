@@ -515,7 +515,7 @@ def write_dictionary_files(var_date_str):
     b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w+")
     writer = csv.writer(b_file)
     for key, value in dict_person_assigned_number_frames.items():
-        writer.writerow([key, value])
+        writer.writerow([key, value, ])
     b_file.close()
 
     # Save frame timestamps
@@ -743,7 +743,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             cv2.putText(img_new, "Person crossed road = "+ str(len(dict_person_crossed_the_road)), (
                                                 50, 260), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)  
                             cv2.putText(img_new, "Person used crosswalk = "+ str(len(dict_person_use_the_crosswalk)), (
-                                                50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)                      
+                                                50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)   
 
                             # used for video writer
                             height, width, layers = img_new.shape
@@ -780,11 +780,14 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
     # Create .csv files - used for tracing trajectories or other analytical jobs
     # create file with people and their coordinates
+
     import csv
     a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w+")
     writer = csv.writer(a_file)
     for key, value in person_pos.items():
-        writer.writerow([key, value])
+        road = True if key in dict_person_crossed_the_road else False       #set road and crosswalk flags in the cords csv file
+        crosswalk = True if key in dict_person_use_the_crosswalk else False
+        writer.writerow([key, value, road, crosswalk])
     a_file.close()
 
     # Save assigned number of frames per person
