@@ -535,7 +535,9 @@ def write_dictionary_files(var_date_str):
 def main(interval = -1, date = None, plot = False, initial=True):
     image_list=[]  # Array the holds the new images created from this script 
     date_arr=[]    # Main for loop array
-    
+    new_file_path = ""
+    #datetime
+
     global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
     global count
     global second_count
@@ -593,8 +595,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
         for i in range(1, len(sys.argv)):   #assuming date was entered
             date_arr.append(sys.argv[i])
         print("No times found, running default hour range")
-
-    # Adds the date the user entered into the main loop that drives the pedestrian detection script
 
     
 
@@ -749,6 +749,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             height, width, layers = img_new.shape
                             size = (width,height)
                             image_list.append(img_new)
+                            new_file_path = file_name
                             # Saves file with writing to the path - ALL .JPGS NOW STORED IN CROSSWALK DETECTIONS
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
                             #print("\n\n") 
@@ -782,11 +783,28 @@ def main(interval = -1, date = None, plot = False, initial=True):
     # create file with people and their coordinates
 
     import csv
+    import sqlite3
+    #Create connection to database
+    db_path = "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
+    db_connection = sqlite3.connect(db_path)
+    db_cursor = db_connection.cursor()
+    #check if current date exists within the database
+    most_recent_date = db_cursor.execute("SELECT DATE FROM Frame ORDER BY DATE DESC LIMIT 1;")
+    date = str(most_recent_date.fetchone())
+    date = date + "+0000"
+
+    if( date == new_file_path ):
+        print("Yes match") 
+        return #return if date already exists ( for now ) 
+
     a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w+")
     writer = csv.writer(a_file)
     for key, value in person_pos.items():
         road = True if key in dict_person_crossed_the_road else False       #set road and crosswalk flags in the cords csv file
         crosswalk = True if key in dict_person_use_the_crosswalk else False
+        in_database_road = 1 if road else 0
+        in_database_crosswalk = 1 if crosswalk else 0
+        db_cursor.execute("INSERT INTO Person (TIMESTAMPID, USECROSSWALK, USEROAD) VALUES (?,?,?)", (key, in_database_crosswalk, in_database_road))
         writer.writerow([key, value, road, crosswalk])
     a_file.close()
 
@@ -801,15 +819,24 @@ def main(interval = -1, date = None, plot = False, initial=True):
     c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w+")
     writer = csv.writer(c_file)
     for key, value in dict_frame_time_stamp.items():
+        new_date = value[0] + "T" + value[1].replace('+0000','')
+        path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
+        #print(new_date, path, key)
+        db_cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (?,?,?)", (str(new_date), str(path), int(key)))
+        #print("Nice")
         writer.writerow([key, value])
     c_file.close()
+
+    #commit changes to database
+    db_connection.commit()
 
     if plot:
         # Print still image of hourly crosswalk trajectories
         print("Tracing trajectories...")
         from plot_lines import draw_lines
-        draw_lines(var_date_str)
+        #draw_lines(var_date_str)
 
+    db_connection.close()
 
 if __name__ == '__main__':
     main()
