@@ -468,7 +468,7 @@ def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
     for cords in person_cords:
         if crosswalk_polygon.contains(Point(cords)):
             count+=1
-    if count>1:
+    if count>3:
         return True
     return False
 
@@ -556,7 +556,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
         total_person_count=0
         frame_id=0
         frame_counter = 0
-        frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
+        frame_queue = deque([],6) # Keeps track of previous 6 frames - useful for re-id
         person_pos = dict()
         dict_person_crossed_the_road = dict()
         dict_person_use_the_crosswalk = dict()
