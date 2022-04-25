@@ -764,10 +764,10 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 continue
     
     #create video of day/hour
-    out = cv2.VideoWriter('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + '/crosswalk_detection.mp4',cv2.VideoWriter_fourcc(*'mp4v'),15,size)
-    for i in range(len(image_list)):
-        out.write(image_list[i])
-    out.release()
+    #out = cv2.VideoWriter('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + '/crosswalk_detection.mp4',cv2.VideoWriter_fourcc(*'mp4v'),15,size)
+    #for i in range(len(image_list)):
+        #out.write(image_list[i])
+    #out.release()
 
     # dont worry about, used for extraction later on
     #with open('person_cords_2021-10-04.pickle', 'wb') as handle1:
@@ -795,7 +795,15 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
     if( date == new_file_path ):
         print("Yes match") 
-        return #return if date already exists ( for now ) 
+        return #return if date already exists ( for now )
+
+    latest_id = 0
+    largest_id = db_cursor.execute("SELECT PERMAID FROM Person ORDER BY PERMAID DESC LIMIT 1;")
+    new_id = largest_id.fetchone()  #fetch the latest id if it exists for later use
+    if largest_id.fetchone() is not None:
+        latest_id = new_id
+    else:
+        print("Database empty") #temporary
 
     a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w+")
     writer = csv.writer(a_file)
@@ -804,7 +812,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
         crosswalk = True if key in dict_person_use_the_crosswalk else False
         in_database_road = 1 if road else 0
         in_database_crosswalk = 1 if crosswalk else 0
-        db_cursor.execute("INSERT INTO Person (TIMESTAMPID, USECROSSWALK, USEROAD) VALUES (?,?,?)", (key, in_database_crosswalk, in_database_road))
+        db_cursor.execute("INSERT INTO Person (DAYID, USECROSSWALK, USEROAD) VALUES (?,?,?)", (key, in_database_crosswalk, in_database_road))
         writer.writerow([key, value, road, crosswalk])
     a_file.close()
 
@@ -826,6 +834,17 @@ def main(interval = -1, date = None, plot = False, initial=True):
         #print("Nice")
         writer.writerow([key, value])
     c_file.close()
+
+    #for each person in dictionary assigned number frames
+    for key, frame_id_array in dict_person_assigned_number_frames.items():
+        for i in range(1, len(frame_id_array)): #frame_id in frame_id_array: #loop through each frame
+            frame_id = frame_id_array[i]        #use indicies to skip first frame in dictionary. CSV File has extra frame at start, but person_cords csv has # of frames - 1
+            coord = person_pos[key][i-1]    #get the coordinates of the current frame in array
+            timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
+            db_cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (?,?,?,?)", 
+                                (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
+            print(timestamp, latest_id+key, i, len(person_pos[key]), len(frame_id_array))
+            db_cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (?,?)", (int(latest_id+key), timestamp) )
 
     #commit changes to database
     db_connection.commit()
