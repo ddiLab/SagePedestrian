@@ -843,7 +843,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
             timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
             db_cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (?,?,?,?)", 
                                 (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
-            print(timestamp, latest_id+key, i, len(person_pos[key]), len(frame_id_array))
             db_cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (?,?)", (int(latest_id+key), timestamp) )
 
     #commit changes to database
