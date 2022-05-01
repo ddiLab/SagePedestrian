@@ -4,12 +4,16 @@ import numpy as np
 from shutil import copyfile
 from datetime import datetime
 import time
+import sqlite3
 
 def draw_lines(date):
     import csv
     #date format: Yyyy-Mm-Dd
     #strip date
-    var_date_object = datetime.strptime(date, "%Y-%m-%d")
+    var_date_object = datetime.strptime(date, "%Y-%m-%d") # for individual hour printing
+    print(var_date_object)
+    master_date_object = str(var_date_object)
+    master_date_object = master_date_object.replace(' 00:00:00','') # for keeping track of each day passing through for all line image
     formatted = str(var_date_object.year) + "/" +  "{:02d}".format(var_date_object.month) + "/" + "{:02d}".format(var_date_object.day) + "/13/"
 
     #generic image for overlaying
@@ -17,6 +21,7 @@ def draw_lines(date):
     im_path = pathlib.Path('/raid/AoT/sage/000048B02D15BC7D/bottom/' + formatted + date + 'T13:00:00+0000.jpg')
     image = cv2.imread(str(im_path))
     image_copy = image.copy()
+    master_copy = image.copy()
 
     #get file paths
     cords_path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + date + "/person_cords.csv"
@@ -58,6 +63,7 @@ def draw_lines(date):
             frame_id = line[0]
             timestamp = datetime.strptime(line[1], "['%Y-%m-%d', '%H:%M:%S+0000']")
             timestamp = timestamp.time()
+
             # condition to check after the first loop thru, sets hours for images
             if(hour != timestamp.hour): # not used until second time + through script
                 cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + date + '/line_result_H' + str(hour) + '.jpg', image)
@@ -101,6 +107,22 @@ def draw_lines(date):
     a.close()
     b.close()
     c.close()
+
+    db_path = "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
+    db_connection = sqlite3.connect(db_path)
+    db_cursor = db_connection.cursor()
+    print('master',master_date_object)
+    master_date_object += '%'
+    db_cursor.execute("SELECT PERMAID,XCOORD,YCOORD FROM Coordinate WHERE DATE LIKE ?;" ,(master_date_object,))
+    record = db_cursor.fetchall()
+    db_cursor.close()
+    for row in record:
+       print(row[0],row[1])
+    db_connection.close()
+
+
+
+
     return
 
 def strip_characters(data):
@@ -111,4 +133,4 @@ def strip_characters(data):
 
 # for using the script without pedestrian_detection.py
 if __name__ == '__main__':
-    draw_lines("2021-08-31")
+    draw_lines("2022-04-30")
