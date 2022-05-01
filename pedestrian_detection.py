@@ -501,35 +501,6 @@ def color_the_person_box(img_original, assigned_number, person_pos, person_cords
         
     return img_original, dict_person_crossed_the_road, dict_person_use_the_crosswalk
 
-def write_dictionary_files(var_date_str):
-    # Create .csv files - used for tracing trajectories or other analytical jobs
-    # create file with people and their coordinates
-    import csv
-    a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w+")
-    writer = csv.writer(a_file)
-    for key, value in person_pos.items():
-        writer.writerow([key, value])
-    a_file.close()
-
-    # Save assigned number of frames per person
-    b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w+")
-    writer = csv.writer(b_file)
-    for key, value in dict_person_assigned_number_frames.items():
-        writer.writerow([key, value, ])
-    b_file.close()
-
-    # Save frame timestamps
-    c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w+")
-    writer = csv.writer(c_file)
-    for key, value in dict_frame_time_stamp.items():
-        writer.writerow([key, value])
-    c_file.close()
-
-    # Print still image of hourly crosswalk trajectories
-    print("Tracing trajectories...")
-    from plot_lines import draw_lines
-    draw_lines(var_date_str)
-
 #For standalone use: All functionality of pedestrian detection script should remain intact,
 #even when the script is done being modified to work in real time
 def main(interval = -1, date = None, plot = False, initial=True):
@@ -556,15 +527,15 @@ def main(interval = -1, date = None, plot = False, initial=True):
         total_person_count=0
         frame_id=0
         frame_counter = 0
-        frame_queue = deque([],6) # Keeps track of previous 6 frames - useful for re-id
-        person_pos = dict()
-        dict_person_crossed_the_road = dict()
-        dict_person_use_the_crosswalk = dict()
-        dict_person_assigned_number_frames = dict()
+        frame_queue = deque([],6)              # Keeps track of previous 6 frames - used for re-id
+        person_pos = dict()                    # Dictionary to hold coordinates of people
+        dict_person_crossed_the_road = dict()  # Dictionary to check if the person has crossed the roads or not, person is key
+        dict_person_use_the_crosswalk = dict() # Dictionary to check if the person has crossed the crosswalk or not, person is key
+        dict_person_assigned_number_frames = dict() 
         dict_frame_time_stamp = dict()
         max_person_count=0
 
-    size = (0,0) # Used in creating a .mp4 video at the end of the script
+    size = (0,0)    # Used in creating a .mp4 video at the end of the script
 
     frame_record = recordtype("frame_record", "frame_id person_records")
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
@@ -573,7 +544,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
     hour_min = 13   #default hour range
     hour_max = 22
     # Allows user to run the script through command line arguments (.xml files must exist)
-    # As of 2/12/2022 - TODO: find a way to get the plot_object_detection script to run constantly so PD can be done easily with CMD line
     
     if len(sys.argv) < 2 and interval == -1:
         print("\n \nFormat: python pedestrian_detection.py [hour_min] [hour_max] [date1, date2, ...]")
@@ -583,10 +553,10 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
     try:
         if interval != -1 and date != None: #called from obj detection
-            hour_min = interval     #1 hour intervals
+            hour_min = interval             #1 hour intervals
             hour_max = interval
             date_arr.append(date)
-        else:   #standalone with params
+        else:                               #standalone with params
             hour_min = int(sys.argv[1])
             hour_max = int(sys.argv[2])
             for i in range(3, len(sys.argv)):
@@ -595,8 +565,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
         for i in range(1, len(sys.argv)):   #assuming date was entered
             date_arr.append(sys.argv[i])
         print("No times found, running default hour range")
-
-    
 
     # Driver loop - based off of the days the user has entered as a CMD line argument
     for day in date_arr:
@@ -647,12 +615,10 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             img_original = cv2.imread(str(im))   # img_original now holds the image
                             img_c = img_original.copy()          # a copy of the original
                             temp_arr=[]
-                            # Check to see if the person has good usuable data by checking if it is within the left 1900 pixels,
-                            # and to see if the area of the persons bounding box is greater than 2200 pixels
                             # person : xmin, xmax, ymin, ymax of person                          
                             for person in person_coordinates:
                                 frame_counter += 1
-                                if person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1750:
+                                if person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1750: # check to see if below 1700 y line, bounding box size > 1750
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
                                     print("Person: ", person , " - end person print")
@@ -701,13 +667,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                                 #print("Current person", person_cross_the_road)
                                 if person_cross_the_road:
                                     print(curr_person.assigned_number, 
-                                        did_person_use_the_crosswalk(person_pos[curr_person.assigned_number], pts))
-                            
-            #                 if total_person_count == 0:
-            #                     total_person_count = max_person_count
-            #                 else:
-            #                     max_person_count = total_person_count
-                                               
+                                        did_person_use_the_crosswalk(person_pos[curr_person.assigned_number], pts))               
                             # fills the crosswalk GREEN
                             cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
                             # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
@@ -732,10 +692,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                                                              dict_person_crossed_the_road,
                                                              dict_person_use_the_crosswalk)
                                         # Write the assigned number onto the image next to the person - IN BLUE
-                                        cv2.putText(
-                                            img_new, str(
-                                                current_frame_persons[p_id].assigned_number), (
-                                                val[1],val[2]-30), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,255), 5)
+                                        cv2.putText(img_new, str(current_frame_persons[p_id].assigned_number), (val[1],val[2]-30), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,255), 5)
 
                             # Writing onto the image original person count, person used road or crosswalk stated - NOT weighted
                             cv2.putText(img_new, "Person count = "+ str(total_person_count), (
@@ -763,22 +720,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 print("Exception thrown:", str(e))
                 continue
     
-    #create video of day/hour
-    #out = cv2.VideoWriter('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + '/crosswalk_detection.mp4',cv2.VideoWriter_fourcc(*'mp4v'),15,size)
-    #for i in range(len(image_list)):
-        #out.write(image_list[i])
-    #out.release()
-
-    # dont worry about, used for extraction later on
-    #with open('person_cords_2021-10-04.pickle', 'wb') as handle1:
-        #pickle.dump(person_pos, handle1, protocol=pickle.HIGHEST_PROTOCOL)
-
-    #with open('person_frames_2021-10-04.pickle', 'wb') as handle2:
-        #pickle.dump(dict_person_assigned_number_frames, handle2, protocol=pickle.HIGHEST_PROTOCOL)
-
-    #with open('frame_timestamps_2021-10-04.pickle', 'wb') as handle3:
-        #pickle.dump(dict_frame_time_stamp, handle3, protocol=pickle.HIGHEST_PROTOCOL)
-
     # Create .csv files - used for tracing trajectories or other analytical jobs
     # create file with people and their coordinates
     import csv
@@ -804,7 +745,9 @@ def main(interval = -1, date = None, plot = False, initial=True):
         writer.writerow([key, value])
     c_file.close()
 
-    if plot:
+    #DATABASE PORTION BELOW
+    #plot = True     for db connection testing short periods of time
+    if plot: #plot is set to true or false from plot_object_detection.py depending on the hour has changed or not
         import sqlite3
         #Create connection to database
         db_path = "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
@@ -817,19 +760,15 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
         if( date == new_file_path ):
             print("Yes match") 
-            return #return if date already exists ( for now )
+            return                      #return if date already exists ( for now )
 
-        latest_id = 0   #get most recent id in data
+        latest_id = 0                   #get most recent id in data
         largest_id = db_cursor.execute("SELECT PERMAID FROM Person ORDER BY PERMAID DESC LIMIT 1;")
         new_id = largest_id.fetchone()  #fetch the latest id if it exists for later use
         if largest_id.fetchone() is not None:
             latest_id = new_id
         else:
-            print("Database empty") #temporary
-
-        # Print still image of hourly crosswalk trajectories
-        print("Tracing trajectories...")
-        from plot_lines import draw_lines
+            print("Database empty")     #temporary
 
         #insert values into person
         for key, value in person_pos.items():
@@ -849,7 +788,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
         for key, frame_id_array in dict_person_assigned_number_frames.items():
             for i in range(1, len(frame_id_array)): #frame_id in frame_id_array: #loop through each frame
                 frame_id = frame_id_array[i]        #use indicies to skip first frame in dictionary. CSV File has extra frame at start, but person_cords csv has # of frames - 1
-                coord = person_pos[key][i-1]    #get the coordinates of the current frame in array
+                coord = person_pos[key][i-1]        #get the coordinates of the current frame in array
                 timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
                 db_cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (?,?,?,?)", 
                                 (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
@@ -857,8 +796,19 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
         #commit changes to database
         db_connection.commit()
+        #close connection to database
         db_connection.close()
-        #draw_lines(var_date_str)
+
+        # Print still image of hourly crosswalk trajectories
+        print("Tracing trajectories...")
+        from plot_lines import draw_lines
+        draw_lines(var_date_str)
+
+        #create video of day/hour
+        out = cv2.VideoWriter('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + '/crosswalk_detection.mp4',cv2.VideoWriter_fourcc(*'mp4v'),15,size)
+        for i in range(len(image_list)):
+            out.write(image_list[i])
+        out.release()
 
 if __name__ == '__main__':
     main()
