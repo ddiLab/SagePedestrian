@@ -111,18 +111,35 @@ def draw_lines(date):
     db_path = "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
     db_connection = sqlite3.connect(db_path)
     db_cursor = db_connection.cursor()
-    print('master',master_date_object)
     master_date_object += '%'
     db_cursor.execute("SELECT PERMAID,XCOORD,YCOORD FROM Coordinate WHERE DATE LIKE ?;" ,(master_date_object,))
-    record = db_cursor.fetchall()
+    record = db_cursor.fetchall() # [0] = perma id, [1] = xcoord, [2] = ycoord
     db_cursor.close()
+    total_coords = []
+    perma_id = record[0][0] # get first perma id for the day
+    #track permaid, store tuples in list, loop thru list
     for row in record:
-       print(row[0],row[1])
+        if(row[0] != perma_id):
+            perma_id = row[0]
+            if(total_coords[0][1] > 1200):
+                master_color = (255,0,0)
+            else:
+                master_color = (0,0,255)
+            master_copy = cv2.polylines(master_copy, np.int32([total_coords]), False, master_color)
+            total_coords.clear()
+            coordinate = (row[1],row[2])
+            total_coords.append(coordinate)
+        else:
+            coordinate = (row[1],row[2]) # tuple of the rows coordinates
+            total_coords.append(coordinate)
+
+    total_coords.clear() # end of record read in
+
+    cv2.putText(master_copy, "Towards Camera", (500,120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0,0,255),6)
+    cv2.putText(master_copy, "Away from Camera", (500,260), cv2.FONT_HERSHEY_SIMPLEX, 4, (255,0,0),6)
+    cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + date + '/line_result_M' + '.jpg', master_copy)
+
     db_connection.close()
-
-
-
-
     return
 
 def strip_characters(data):
