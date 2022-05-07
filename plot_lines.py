@@ -6,6 +6,9 @@ from datetime import datetime
 import time
 import sqlite3
 
+#code isn't the most efficient at the moment
+#Some improvements: Do the hourly and master plots at the same time
+#                   Only pull information from the database once
 def draw_lines(date):
     import csv
     #date format: Yyyy-Mm-Dd
@@ -31,7 +34,8 @@ def draw_lines(date):
     person_id = 0
     found = False
 
-    #open coordinates file
+    #draw lines using csv files
+    """
     with open(cords_path, 'r', newline='') as a, open(timestamp_path, 'r', newline='') as b, open(person_frames_path, 'r', newline='') as c:
         #read in every file with csv reader
         cords = csv.reader(a)
@@ -107,17 +111,56 @@ def draw_lines(date):
     a.close()
     b.close()
     c.close()
+    """
 
+    #draw lines using the database
     db_path = "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
     db_connection = sqlite3.connect(db_path)
     db_cursor = db_connection.cursor()
-    master_date_object += '%'
-    db_cursor.execute("SELECT PERMAID,XCOORD,YCOORD FROM Coordinate WHERE DATE LIKE ?;" ,(master_date_object,))
+    master_date = master_date_object + '%'
+    db_cursor.execute("SELECT PERMAID,XCOORD,YCOORD FROM Coordinate WHERE DATE LIKE ?;", (master_date,))
     record = db_cursor.fetchall() # [0] = perma id, [1] = xcoord, [2] = ycoord
-    db_cursor.close()
+    
+    if len(record) < 1:  #if record is empty
+        print("No records found")
+        return  #just exit
+
     total_coords = []
     perma_id = record[0][0] # get first perma id for the day
-    #track permaid, store tuples in list, loop thru list
+
+    #hourly images
+    for i in range(13, 23):
+        date_hour = master_date_object + 'T' + str(i) + '%'
+        print("Date: ", date_hour)
+        db_cursor.execute("SELECT PERMAID,XCOORD,YCOORD FROM Coordinate WHERE DATE LIKE ?;" ,(date_hour,))
+        rec = db_cursor.fetchall() # [0] = perma id, [1] = xcoord, [2] = ycoord
+        image_copy = image.copy()   #create a copy for the specific hour
+        print("Length: ", len(rec))
+        id = rec[0][0]
+        for row in rec:
+            if(id != row[0]):   #if the ids are different, update colors and write to image
+                #update color
+                if(total_coords[0][1] > 1200):  master_color = (255,0,0)
+                else: master_color = (0,0,255)
+
+                image_copy = cv2.polylines(image_copy, np.int32([total_coords]), False, master_color)
+                total_coords.clear()    #clear coords for single person
+                coordinate = (row[1],row[2])
+                total_coords.append(coordinate)
+                id = row[0] #reset the current ID
+            else:
+                coordinate = (row[1],row[2]) # tuple of the rows coordinates
+                total_coords.append(coordinate)
+
+        #write hourly images
+        total_coords.clear() # end of record read in
+        cv2.putText(image_copy, "Towards Camera", (500,120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0,0,255),6)
+        cv2.putText(image_copy, "Away from Camera", (500,260), cv2.FONT_HERSHEY_SIMPLEX, 4, (255,0,0),6)
+        cv2.putText(image_copy, "Hour: " + str(i), (500,400), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 255, 0), 6)
+        cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + date + '/line_result_' + str(i) + '.jpg', image_copy)
+        
+
+    #track permaid, store tuples in list, loop thru list, for master image containing all points
     for row in record:
         if(row[0] != perma_id):
             perma_id = row[0]
@@ -133,13 +176,15 @@ def draw_lines(date):
             coordinate = (row[1],row[2]) # tuple of the rows coordinates
             total_coords.append(coordinate)
 
+    db_cursor.close()
+
     total_coords.clear() # end of record read in
 
     cv2.putText(master_copy, "Towards Camera", (500,120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0,0,255),6)
     cv2.putText(master_copy, "Away from Camera", (500,260), cv2.FONT_HERSHEY_SIMPLEX, 4, (255,0,0),6)
     cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + date + '/line_result_M' + '.jpg', master_copy)
 
-    db_connection.close()
+    db_connection.close()   #close db
     return
 
 def strip_characters(data):
@@ -150,4 +195,4 @@ def strip_characters(data):
 
 # for using the script without pedestrian_detection.py
 if __name__ == '__main__':
-    draw_lines("2022-04-30")
+    draw_lines("2022-05-03")
