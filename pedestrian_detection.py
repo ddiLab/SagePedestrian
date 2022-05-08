@@ -714,7 +714,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
     """
 
     #DATABASE PORTION BELOW
-    #plot = True     for db connection testing short periods of time
+    #plot = True    # for db connection testing short periods of time
     if plot: #plot is set to true or false from plot_object_detection.py depending on the hour has changed or not
         import sqlite3
         #Create connection to database
@@ -733,8 +733,9 @@ def main(interval = -1, date = None, plot = False, initial=True):
         latest_id = 0                   #get most recent id in data
         largest_id = db_cursor.execute("SELECT PERMAID FROM Person ORDER BY PERMAID DESC LIMIT 1;")
         new_id = largest_id.fetchone()  #fetch the latest id if it exists for later use
-        if largest_id.fetchone() is not None:
-            latest_id = new_id
+        if new_id is not None:
+            latest_id = new_id[0]
+            print("Latest ID ", latest_id)
         else:
             print("Database empty")     #temporary
 
@@ -758,6 +759,9 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 frame_id = frame_id_array[i]        #use indicies to skip first frame in dictionary. CSV File has extra frame at start, but person_cords csv has # of frames - 1
                 coord = person_pos[key][i-1]        #get the coordinates of the current frame in array
                 timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
+                print("Key ", key)
+                print("Coord[0] ", coord[0])
+                print("Coord[1] ", coord[1])
                 db_cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (?,?,?,?)", 
                                 (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
                 db_cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (?,?)", (int(latest_id+key), timestamp) )
