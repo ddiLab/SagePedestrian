@@ -2,7 +2,7 @@ import pathlib
 import cv2
 import numpy as np
 from shutil import copyfile
-from datetime import datetimegit 
+from datetime import datetime 
 import time
 import sqlite3
 
@@ -56,6 +56,11 @@ def draw_lines(date):
         rec = db_cursor.fetchall() # [0] = perma id, [1] = xcoord, [2] = ycoord
         image_copy = image.copy()   #create a copy for the specific hour
         print("Length: ", len(rec))
+        if len(rec) < 1:
+            continue
+        
+        print("rec ", rec)
+        print("rec00 ", rec[0][0])
         id = rec[0][0]
         for row in rec:
             if(id != row[0]):   #if the ids are different, update colors and write to image
@@ -108,4 +113,4 @@ def draw_lines(date):
 
 # for using the script without pedestrian_detection.py, for testing
 if __name__ == '__main__':
-    draw_lines("2022-05-03")
+    draw_lines("2022-05-07")
