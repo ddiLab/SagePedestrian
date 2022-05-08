@@ -10,7 +10,6 @@ import sqlite3
 #Some improvements: Do the hourly and master plots at the same time
 #                   Only pull information from the database once
 def draw_lines(date):
-    import csv
     #date format: Yyyy-Mm-Dd
     #strip date
     var_date_object = datetime.strptime(date, "%Y-%m-%d") # for individual hour printing
@@ -152,14 +151,12 @@ def draw_lines(date):
             else:
                 coordinate = (row[1],row[2]) # tuple of the rows coordinates
                 total_coords.append(coordinate)
-
         #write hourly images
         total_coords.clear() # end of record read in
         cv2.putText(image_copy, "Towards Camera", (500,120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0,0,255),6)
         cv2.putText(image_copy, "Away from Camera", (500,260), cv2.FONT_HERSHEY_SIMPLEX, 4, (255,0,0),6)
         cv2.putText(image_copy, "Hour: " + str(i), (500,400), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 255, 0), 6)
         cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + date + '/line_result_' + str(i) + '.jpg', image_copy)
-        
 
     #track permaid, store tuples in list, loop thru list, for master image containing all points
     for row in record:
@@ -181,6 +178,7 @@ def draw_lines(date):
 
     total_coords.clear() # end of record read in
 
+    #write the image for the whole day
     cv2.putText(master_copy, "Towards Camera", (500,120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0,0,255),6)
     cv2.putText(master_copy, "Away from Camera", (500,260), cv2.FONT_HERSHEY_SIMPLEX, 4, (255,0,0),6)
     cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + date + '/line_result_M' + '.jpg', master_copy)
@@ -188,12 +186,6 @@ def draw_lines(date):
     db_connection.close()   #close db
     return
 
-def strip_characters(data):
-    data = data.replace('[', '')
-    data = data.replace(']', '')
-    data = data.replace(' ', '')
-    return data
-
-# for using the script without pedestrian_detection.py
+# for using the script without pedestrian_detection.py, for testing
 if __name__ == '__main__':
     draw_lines("2022-05-03")
