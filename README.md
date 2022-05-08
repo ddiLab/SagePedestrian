@@ -48,6 +48,7 @@ Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_a
  - If you are running a specified day on the plot_object_detection.py script and want it to run in the background, follow the steps commented at the top of that file
  
  - Plot Lines can be run standalone but you must change the date at the bottom of the script in __main__
-![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/line_result_M.jpg?raw=true)
+ 
+![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/line_result_M.jpg?raw=true)
 
 *This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
