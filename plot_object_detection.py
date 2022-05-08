@@ -11,13 +11,6 @@
 Object Detection From TF2 Checkpoint
 ====================================
 """
-
-# %%
-# Download the test images
-# ~~~~~~~~~~~~~~~~~~~~~~~~
-# First we will download the images that we will use throughout this tutorial. The code snippet
-# shown bellow will download the test images from the `TensorFlow Model Garden <https://github.com/tensorflow/models/tree/master/research/object_detection/test_images>`_
-# and save them inside the ``data/images`` folder.
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging (1)]
 os.environ["CUDA_VISIBLE_DEVICES"]="0"	    # Use GPU
@@ -66,23 +59,6 @@ for filename in os.listdir(temp_image_dir):
     for picture in os.listdir(temp_image_dir + filename):
         IMAGE_PATHS.append(os.path.join(temp_image_dir + filename, picture))
 
-# %%
-# Download the model
-# ~~~~~~~~~~~~~~~~~~
-# The code snippet shown below is used to download the pre-trained object detection model we shall
-# use to perform inference. The particular detection algorithm we will use is the
-# `CenterNet HourGlass104 1024x1024`. More models can be found in the `TensorFlow 2 Detection Model Zoo <https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md>`_.
-# To use a different model you will need the URL name of the specific model. This can be done as
-# follows:
-#
-# 1. Right click on the `Model name` of the model you would like to use;
-# 2. Click on `Copy link address` to copy the download link of the model;
-# 3. Paste the link in a text editor of your choice. You should observe a link similar to ``download.tensorflow.org/models/object_detection/tf2/YYYYYYYY/XXXXXXXXX.tar.gz``;
-# 4. Copy the ``XXXXXXXXX`` part of the link and use it to replace the value of the ``MODEL_NAME`` variable in the code shown below;
-# 5. Copy the ``YYYYYYYY`` part of the link and use it to replace the value of the ``MODEL_DATE`` variable in the code shown below.
-#
-# For example, the download link for the model used below is: ``download.tensorflow.org/models/object_detection/tf2/20200711/centernet_hg104_1024x1024_coco17_tpu-32.tar.gz``
-
 # Download and extract model
 def download_model(model_name, model_date):
     base_url = 'http://download.tensorflow.org/models/object_detection/tf2/'
@@ -93,10 +69,8 @@ def download_model(model_name, model_date):
     return str(model_dir)
 
 MODEL_DATE = '20200711'
-# model can be swapped out for higher accuracy but not needed because we only need people detections
-# As of 10/31/2021, we have noticed a problem with the lighting and directories in the images - problems for the model detection
 MODEL_NAME = 'efficientdet_d4_coco17_tpu-32'
-#Original model below - takes longer and has a bit less accuracy
+#Original model below - takes longer and has a bit less accuracy, MODEL_DATE is the same for both models
 #MODEL_NAME = 'centernet_hg104_1024x1024_coco17_tpu-32'
 PATH_TO_MODEL_DIR = download_model(MODEL_NAME, MODEL_DATE)
 
@@ -122,10 +96,7 @@ def download_labels(filename):
 LABEL_FILENAME = 'mscoco_label_map.pbtxt'
 PATH_TO_LABELS = download_labels(LABEL_FILENAME)
 
-# %%
-# Load the model
-# ~~~~~~~~~~~~~~
-# Next we load the downloaded model
+# LOAD THE MODEL
 import time
 from object_detection.utils import label_map_util
 from object_detection.utils import config_util
@@ -169,24 +140,8 @@ print('Done! Took {} seconds'.format(elapsed_time))
 # functions, but anything that returns a dictionary mapping integers to appropriate string labels
 # would be fine.
 
-category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS,
-                                                                    use_display_name=True)
+category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
 
-# %%
-# Putting everything together
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# The code shown below loads an image, runs it through the detection model and visualizes the
-# detection results, including the keypoints.
-#
-# Note that this will take a long time (several minutes) the first time you run this code due to
-# tf.function's trace-compilation --- on subsequent runs (e.g. on new images), things will be
-# faster.
-#
-# Here are some simple things to try out if you are curious:
-#
-# * Modify some of the input images and see if detection still works. Some simple things to try out here (just uncomment the relevant portions of code) include flipping the image horizontally, or converting to grayscale (note that we still expect the input image to have 3 channels).
-# * Print out `detections['detection_boxes']` and try to match the box locations to the boxes in the image.  Notice that coordinates are given in normalized form (i.e., in the interval [0, 1]).
-# * Set ``min_score_thresh`` to other values (between 0 and 1) to allow more detections in or to filter out more detections.
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -194,16 +149,7 @@ import warnings
 warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
 def load_image_into_numpy_array(path):
-    """Load an image from file into a numpy array.
-    Puts image into numpy array to feed into tensorflow graph.
-    Note that by convention we put it into a numpy array with shape
-    (height, width, channels), where channels=3 for RGB.
-    Args:
-      path: the file path to the image
-    Returns:
-      uint8 numpy array with shape (img_height, img_width, 3)
-    """
-    return np.array(Image.open(path))
+    return np.array(Image.open(path)) # Load image from file into numpy array
 
 def run_inference_for_single_image(model, image):
     image = np.asarray(image)
@@ -216,8 +162,6 @@ def run_inference_for_single_image(model, image):
     # Run inference
     #output_dict = model(input_tensor)
     output_dict = detect_fn(input_tensor)
-    keys = output_dict.keys()
-    #keys = output_dict.keys()
     # All outputs are batches tensors.
     # Convert to numpy arrays, and take index [0] to remove the batch dimension.
     # We're only interested in the first num_detections.
@@ -240,7 +184,7 @@ def run_inference_for_single_image(model, image):
         output_dict['detection_masks_reframed'] = detection_masks_reframed.numpy()
     return output_dict
 
-file_hour = 13
+file_hour = 13          
 last_hour = file_hour
 file_date = " "
 
@@ -273,13 +217,11 @@ def write_label_xmls(model, image_path):
             for cls, box, score in zip(classes, boxes, scores):
                 left, right, top, bottom = box[1] * im_width, box[3] * im_width, box[0] * im_height, box[2] * im_height
                 cls = cls + 1
-                if cls in category_index and score >= .5: # .55 good enough to keep pictures around with people in background
-                    # doesnt keep the data getting from getting cut off and creating time gaps from pedestrian detection code
-                    # .6+ gives data and could be an end threshold for when we have perfected the pedestrian detection code
+                if cls in category_index and score >= .5: # .5 Threshold for accuracy on xml objects
                     name = category_index[cls]['name']
                     writer.addObject(name, int(left), int(top), int(right), int(bottom))
 
-        path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml")
+        path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml") # Get the xml files 
         writer.save(path_to_xml)
         print("Done: ", os.path.basename(path_to_xml))
         print("Hour: ", file_hour)
@@ -296,15 +238,13 @@ import pedestrian_detection
 
 count = 0
 
+# For running pedestrian_detection.py
 for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
-    #if pathlib.Path(xml_path).is_file() is False:
     file_hour, file_date, processed = write_label_xmls(detection_model, image_path)
     if file_hour != last_hour and file_hour >= 13 and processed: #hour has changed
-        #Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #start a new process that processes the new data per hour
         pedestrian_detection.main(last_hour, file_date, False, count==0)
         last_hour = file_hour
         count += 1
-
-pedestrian_detection.main(last_hour, file_date, True, False)   #Runs plot_lines
-#Popen(args=['python', './pedestrian_detection.py', str(last_hour), str(last_hour), file_date]) #start a new process that processes the new data per hour
+# Runs pedestrian_detection.py with "plot" set to true so it runs plot_lines.py
+pedestrian_detection.main(last_hour, file_date, True, False)

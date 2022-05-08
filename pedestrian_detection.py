@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 import sys
 import math
 from numpy.core.fromnumeric import var
-# Need to change parent directory here depending on if the repo is in home directory 
+
 sys.path.insert(1, './deep-person-reid/')
 import torch
 import torchreid
@@ -39,22 +39,17 @@ max_person_count=0
 # CONTAINS MODEL - IF WANTING TO CHANGE MODELS CHANGE THE "model_name" variable
 extractor = FeatureExtractor(model_name='osnet_x1_0', model_path='./model.pth.tar', device='cuda')
 
-# Exact crosswalk coordinates from the new SAGE camera on campus
+# Gets the crosswalk coordinates (the coordinates are slightly bigger than the exact coordinates from corner to corner)
 def get_crosswalk_coordinates():
     coordinates = [[514, 796], [721, 783], [1095, 934], [763, 992]]
     return np.array(coordinates)
 
-# The following function is used in testing if expanded crosswalk coordinates would be better (people walk on crosswalk edges),
-# but helps us keep the highlighted portion of the crosswalk for the viewer to understand better
+# Gets the exact crosswalk coordinates (used for highlighting later on in the script, not the actual detections)
 def get_highlightable_coordinates():
     coordinates = [[524, 802], [667, 790], [1023, 941], [758, 962]] # for highlighting the crosswalk
     return np.array(coordinates)
 
 # Parse the xml file
-# gets object, bndbox (bounding box for the objects), and check if the object is equal to a person
-# returns list all objects 
-# snow on ground can cause certain object detection errors that give every image a person which means it will be ran
-# dramatically slows down and takes up much more space
 def parse_xml(xml_file):
     final_arr=[]
     tree= ET.parse(xml_file)
@@ -345,7 +340,7 @@ def update_person_frame(current_frame_id,frame_queue,person_pos):
                             del frame_queue[frame_id].person_records[person_id]            
     # print(dict_person_assigned_number_frames)
     # print("Queue Length", len(frame_queue))
-    #print("Frame Queue: " + str(frame_queue) + ", Person Pos: " + str(person_pos))
+    # print("Frame Queue: " + str(frame_queue) + ", Person Pos: " + str(person_pos))
     return frame_queue,person_pos
 
 def middle_between_points(point1, point2):
@@ -364,36 +359,14 @@ def check_proximity(point1, point2):
         if delta_x <= x_thresh or delta_x >= -x_thresh:
             return True
     return False
-
-#checks if a point is on the edge of the screen within 
-#a bounds
-def check_if_on_edge(last_point, point):
-    if abs(2550 - point[0]) < 400:
-        if last_point[0] < point[0]: return True
-    elif abs(0-point[0]) < 400:
-        if last_point[0] > 400: return True
-
-    if abs(1920 - point[1]) < 400:
-        if last_point[1] < point[1]: return True
-    elif abs(0-point[1]) < 400:
-        if last_point[1] > point[1]: return True
-
-    return False
-
-def check_in_image_box(point):
-    image_poly = Polygon([(120, 0), (120, 1500), (1900, 1500), (1900,0)])
-    if image_poly.contains(point):
-        return True
-    return False
         
 # GLOBAL VARIABLES TO FIND LINES ON THE ROAD
-# Slopes found using (y2-y1)/(x2-x1) - points found by looking at road 
+# Slopes found using (y2-y1)/(x2-x1) - points found by looking at road, in standard form ax^2 + bx + c = 0
 north_road_slope = 0.037109375
 north_ycoord = 830
 south_road_slope = 0.0882352941176
 south_ycoord = 1025
 
-# sometimes returns true when it shouldnt
 def did_person_cross_the_road(assigned_number, person_pos):
     #print("DID PERSON CROSS THE ROAD")
     #print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
@@ -433,9 +406,6 @@ def angle_between_crosswalk_and_trajectory(person_pos):
     #print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     import math
     from sympy import Point, Line, pi
-    first_point = 0
-    second_point = 0
-    flag = True
 
     #get crosswalk coords
     crosswalk_coords = get_crosswalk_coordinates()
@@ -507,8 +477,8 @@ def main(interval = -1, date = None, plot = False, initial=True):
     image_list=[]  # Array the holds the new images created from this script 
     date_arr=[]    # Main for loop array
     new_file_path = ""
-    #datetime
 
+    # Made everything global because it needs to be imported in plot_object_detection so we can keep data across hours/whole day
     global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
     global count
     global second_count
@@ -543,11 +513,11 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
     hour_min = 13   #default hour range
     hour_max = 22
+
     # Allows user to run the script through command line arguments (.xml files must exist)
-    
     if len(sys.argv) < 2 and interval == -1:
         print("\n \nFormat: python pedestrian_detection.py [hour_min] [hour_max] [date1, date2, ...]")
-        print("Where time_min / max = the hour range, dateN = yyyy/mm/dd ")
+        print("Where hour_min / hour_max = the hour range, dateN = yyyy/mm/dd ")
         print("If times are not found, will run hours between 13 and 22.")
         return
 
@@ -619,6 +589,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             for person in person_coordinates:
                                 frame_counter += 1
                                 if person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1750: # check to see if below 1700 y line, bounding box size > 1750
+                                    # for increased accuracy can do Person[0] > 1900, ignores right half of screen which can cause massive re-id errors
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
                                     print("Person: ", person , " - end person print")
@@ -641,13 +612,10 @@ def main(interval = -1, date = None, plot = False, initial=True):
                                     
                                     current_frame_persons.append(person_rec)
                                     
-            #                         cv2.rectangle(img_original,(person[0],person[1]),(person[2],person[3]),(0,255,0),3)
                                     temp_arr.append([person_id, person[0],person[1], person[2], person[3]])
                                     #print("Temp arr: " + str(temp_arr))
                                     
                                     person_id+=1
-                                    # if person_id> 100000:
-                                    #     person_id=1
                                 else: 
                                     if len(frame_queue) > 0 and frame_counter % 5 == 0 and frame_counter != 0:
                                         frame_queue.popleft()
@@ -670,7 +638,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
                                         did_person_use_the_crosswalk(person_pos[curr_person.assigned_number], pts))               
                             # fills the crosswalk GREEN
                             cv2.fillPoly(img_original, pts = [pts], color=(0,255,0))
-                            # cv2.line(img_original,(1286,0),(1286,1900),(0,255,255),5) vertical line
                             # draw lines that people will be checked for crossing - RED
                             cv2.line(img_original,(0,830),(2560,735),(0,0,255),8)
                             cv2.line(img_original,(0,1025),(2550,800),(0,0,255),8)
@@ -719,7 +686,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
             except Exception as e:
                 print("Exception thrown:", str(e))
                 continue
-    
+    """
     # Create .csv files - used for tracing trajectories or other analytical jobs
     # create file with people and their coordinates
     import csv
@@ -744,6 +711,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
     for key, value in dict_frame_time_stamp.items():
         writer.writerow([key, value])
     c_file.close()
+    """
 
     #DATABASE PORTION BELOW
     #plot = True     for db connection testing short periods of time
