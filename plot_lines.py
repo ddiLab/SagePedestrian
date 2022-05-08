@@ -27,6 +27,7 @@ def draw_lines(date):
     master_copy = image.copy()
 
     #get file paths
+    """
     cords_path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + date + "/person_cords.csv"
     timestamp_path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + date + "/frame_timestamps.csv"
     person_frames_path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + date + "/person_frames.csv"
@@ -35,7 +36,7 @@ def draw_lines(date):
     found = False
 
     #draw lines using csv files
-    """
+    
     with open(cords_path, 'r', newline='') as a, open(timestamp_path, 'r', newline='') as b, open(person_frames_path, 'r', newline='') as c:
         #read in every file with csv reader
         cords = csv.reader(a)
