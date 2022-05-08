@@ -21,12 +21,12 @@ Deep Re-id: https://github.com/KaiyangZhou/deep-person-reid
 **STEPS TO GETTING THE CODE UP AND RUNNING (on hartley):**
 
 0) Clone this github repo
-1) Create and activate a new [conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#activating-an-environment) using the provided env.yml file 
-2) Clone [the deep-person-reid repo](https://github.com/KaiyangZhou/deep-person-reid) into this cloned repository
-3) Make sure that the .xml files for the day you run exist in this directory /raid/AoT/image_label_xmls/ 
-4) Run the pedestrian_detection script following this format: "python pedestrian_detection.py [hour_min] [hour_max] [date1, date2, ...]"
+1) Create and activate a new [conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#activating-an-environment) using the provided env.yml file (If conda throws errors that is okay, just activate the environment and keep going.)
+2) Clone [the deep-person-reid repo](https://github.com/KaiyangZhou/deep-person-reid) into this cloned repository. You shouldn't need to install it, make sure it's in the directory where you are running the script.
+4) Make sure that the .xml files for the day you run exist in this directory /raid/AoT/image_label_xmls/ 
+5) Run the pedestrian_detection script following this format: "python pedestrian_detection.py [hour_min] [hour_max] [date1, date2, ...]"
   - Where hours are optional, dateN = yyyy/mm/dd
-5) The output of the pedestrian_detection.py script will be found in /raid/AoT/image_label_xmls/crosswalk_detections/
+6) The output of the pedestrian_detection.py script will be found in /raid/AoT/image_label_xmls/crosswalk_detections/
 
 **TROUBLESHOOTING)**
  - If the code refuses to use the gpu, try adding this to your .bashrc script in your home directory
@@ -34,8 +34,12 @@ Deep Re-id: https://github.com/KaiyangZhou/deep-person-reid
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/[user]/.conda/envs/tf_gpu/lib
   export PYTHONPATH=$PYTHONPATH:/home/[user]/work/models
   
- - "ModuleNotFoundError: No module named 'torchreid'" -> Double check the deep-reid path at the top of pedestrian_detection.py if you get this error
+ - "ModuleNotFoundError: No module named 'torchreid'" -> Double check the deep-reid path at the top of pedestrian_detection.py if you get this error, make sure it points to the deep-reid directory
+    - For any "ModuleNotFoundError", "pip install [module_name]" will usually do the trick.
+    - In the case of cv2, try: pip install opencv-python
 
  - If you are running a specified day on the plot_object_detection.py script and want it to run in the background, follow the steps commented at the top of that file
+
+![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/sample_images/line_result.jpg?raw=true)
 
 *This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
