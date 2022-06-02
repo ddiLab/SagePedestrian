@@ -57,7 +57,7 @@ xml_output_dir = "/raid/AoT/image_label_xmls/" + output_dir_date # directory is 
 
 for filename in os.listdir(temp_image_dir): # raw image directory
     for picture in os.listdir(temp_image_dir + filename):
-        print("Pic: ", picture)
+        # print("Pic: ", picture)
         if os.path.getsize((os.path.join(temp_image_dir + filename, picture))) <= 0:
             print("Corrupted file found, terminating program")
             quit() 
