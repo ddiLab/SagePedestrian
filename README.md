@@ -62,8 +62,8 @@ Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_a
 **Database Path** : "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **BEFORE RUNNING ANY COMMANDS, IT IS HELPFUL TO DO THESE COMMANDS TO MAKE THE QUERIES MORE READABLE:**
-1) .header on
-2) .mode column
+1)      .header on
+2)      .mode column
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Helpful Sqlite3 commands:**
 
