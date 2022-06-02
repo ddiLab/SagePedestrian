@@ -14,12 +14,19 @@ Pedestrian tracking with data from NSF Sage Project
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Useful Sources:**  
 Tutorial to create conda env: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#activating-an-environment
-Open CV Image Writing: https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html (Python is below c++)  
-Open CV Line Drawing Documentation: https://docs.opencv.org/4.x/dc/da5/tutorial_py_drawing_functions.html  
+
+Open CV Image Writing: https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html (Python is below c++) 
+
+Open CV Line Drawing Documentation: https://docs.opencv.org/4.x/dc/da5/tutorial_py_drawing_functions.html 
+
 Object Detection Tutorial: https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/auto_examples/plot_object_detection_saved_model.html  
+
 Deep Re-id: https://github.com/KaiyangZhou/deep-person-reid  
+
 Sqlite3: https://docs.python.org/3/library/sqlite3.html 
+
 Cronjob Tutorial: https://www.hostinger.com/tutorials/cron-job 
+
 Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_anznBg6y3VhuSMcpN9oe 
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
