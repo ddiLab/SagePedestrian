@@ -51,6 +51,7 @@ Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_a
  
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #Database
+
 **Database Path** : "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **BEFORE RUNNING ANY COMMANDS, IT IS HELPFUL TO DO THESE COMMANDS TO MAKE THE QUERIES MORE READABLE:**
@@ -79,14 +80,16 @@ Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_a
 **Table Names** : Contains, Coorindate, Frame, Person
 
 **Person**
+```
 cid  name          type     notnull  dflt_value  pk
 ---  ------------  -------  -------  ----------  --
 0    PERMAID       INTEGER  0                    1
 1    DAYID         INTEGER  1                    0
 2    USECROSSWALK  BIT(1)   0        0           0
 3    USEROAD       BIT(1)   0        0           0
-
+```
 **Coordinate** 
+```
 cid  name     type       notnull  dflt_value  pk
 ---  -------  ---------  -------  ----------  --
 0    TOTAL    INTEGER    0                    1
@@ -94,21 +97,24 @@ cid  name     type       notnull  dflt_value  pk
 2    DATE     TIMESTAMP  1                    0
 3    XCOORD   INTEGER    0        0           0
 4    YCOORD   INTEGER    0        0           0
-
+```
 **Frame** 
+```
 cid  name     type       notnull  dflt_value  pk
 ---  -------  ---------  -------  ----------  --
 0    DATE     TIMESTAMP  0                    1
 1    PATH     CHAR(128)  1                    0
 2    FRAMEID  INT        1                    0
-
+```
 **Contains**
+```
 cid  name     type       notnull  dflt_value  pk
 ---  -------  ---------  -------  ----------  --
 0    PERMAID  INT        1                    1
 1    DATE     TIMESTAMP  1                    2
-
-![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/line_result_M.jpg?raw=true)
+```
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/line_result_M.jpg?raw=true)
+
 
 *This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
