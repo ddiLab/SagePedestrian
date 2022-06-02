@@ -1,12 +1,12 @@
 # Sage Pedestrian
 Pedestrian tracking with data from NSF Sage Project
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**env.yml:** Conda environment to run scripts  
-**plot_object_detection.py:** Run the images through the object detection model and spits out an xml file containing the results  
-**pedestrian_detection.py:** Parse xml files and track people in the photo using re-id  
-**plot_lines.py:** Using database information to trace trajectories and write them to an image (hourly and daily)
-**SagePedestrian.sql:** Sql script that creates the tables for the pedestrian detection database
-**requirements.txt:** Environment creation for non Conda environments
+**env.yml:** Conda environment to run scripts     
+**plot_object_detection.py:** Run the images through the object detection model and spits out an xml file containing the results   
+**pedestrian_detection.py:** Parse xml files and track people in the photo using re-id     
+**plot_lines.py:** Using database information to trace trajectories and write them to an image (hourly and daily)    
+**SagePedestrian.sql:** Sql script that creates the tables for the pedestrian detection database     
+**requirements.txt:** Environment creation for non Conda environments    
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Students:** Justin Derus, Wesley Kwiecinski                   
