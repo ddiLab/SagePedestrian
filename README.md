@@ -123,5 +123,4 @@ cid  name     type       notnull  dflt_value  pk
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/line_result_M.jpg?raw=true)
 
-
 *This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
