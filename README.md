@@ -50,8 +50,8 @@ Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_a
  - Plot Lines can be run standalone but you must change the date at the bottom of the script in __main__
  
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Database
-
+# Database
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Database Path** : "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **BEFORE RUNNING ANY COMMANDS, IT IS HELPFUL TO DO THESE COMMANDS TO MAKE THE QUERIES MORE READABLE:**
