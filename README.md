@@ -49,6 +49,66 @@ Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_a
  
  - Plot Lines can be run standalone but you must change the date at the bottom of the script in __main__
  
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Database
+**Database Path** : "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+**BEFORE RUNNING ANY COMMANDS, IT IS HELPFUL TO DO THESE COMMANDS TO MAKE THE QUERIES MORE READABLE:**
+1) .header on
+2) .mode column
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+**Helpful Sqlite3 commands:**
+
+**Select all the people in a specific day with their coordinates** - select PERMAID,XCOORD,YCOORD from Coordinate where DATE like 'yyyy-mm-dd%';
+ - to get specific times use YYYY-MM-DDTHH:MM:SS
+ 
+**Find ID's of the people who have crossed the road** - select PERMAID, USEROAD from Person where USEROAD == 1;
+- replace USEROAD with USECROSSWALK for crosswalk
+
+**Find out what days are in the database** - select DATE from Frame where DATE like 'yyyy-mm-dd%';
+
+**Find the total number of people who used the crosswalk** - select count(PERMAID) from Person where USECROSSWALK == 1;
+
+**Find the number of people who used the crosswalk in a certain day** - select count(a.PERMAID) from 
+( select PERMAID from Person where USECROSSWALK == 1 INTERSECT select PERMAID from Contains where DATE LIKE '2022-05-09%' ) as a;
+
+**Tutorial** - https://www.sqlitetutorial.net/sqlite-describe-table/ 
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Table Names** : Contains, Coorindate, Frame, Person
+
+**Person**
+cid  name          type     notnull  dflt_value  pk
+---  ------------  -------  -------  ----------  --
+0    PERMAID       INTEGER  0                    1
+1    DAYID         INTEGER  1                    0
+2    USECROSSWALK  BIT(1)   0        0           0
+3    USEROAD       BIT(1)   0        0           0
+
+**Coordinate** 
+cid  name     type       notnull  dflt_value  pk
+---  -------  ---------  -------  ----------  --
+0    TOTAL    INTEGER    0                    1
+1    PERMAID  INTEGER    1                    0
+2    DATE     TIMESTAMP  1                    0
+3    XCOORD   INTEGER    0        0           0
+4    YCOORD   INTEGER    0        0           0
+
+**Frame** 
+cid  name     type       notnull  dflt_value  pk
+---  -------  ---------  -------  ----------  --
+0    DATE     TIMESTAMP  0                    1
+1    PATH     CHAR(128)  1                    0
+2    FRAMEID  INT        1                    0
+
+**Contains**
+cid  name     type       notnull  dflt_value  pk
+---  -------  ---------  -------  ----------  --
+0    PERMAID  INT        1                    1
+1    DATE     TIMESTAMP  1                    2
+
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/line_result_M.jpg?raw=true)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 *This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.*
