@@ -741,11 +741,11 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
         #insert values into person
         for key, value in person_pos.items():
-            road = True if key in dict_person_crossed_the_road else False       #set road and crosswalk flags in the cords csv file
-            crosswalk = True if key in dict_person_use_the_crosswalk else False
-            in_database_road = 1 if road else 0
-            in_database_crosswalk = 1 if crosswalk else 0
-            db_cursor.execute("INSERT INTO Person (DAYID, USECROSSWALK, USEROAD) VALUES (?,?,?)", (key, in_database_crosswalk, in_database_road))
+            road = 1 if key in dict_person_crossed_the_road else 0       #set road and crosswalk flags in the cords csv file
+            crosswalk = 1 if key in dict_person_use_the_crosswalk else 0
+            north = 1 if (value[0][1] - value[-1][1] >= 0) else 0
+            east = 1 if (value[0][0] - value[-1][0] < 0) else 0
+            db_cursor.execute("INSERT INTO Person (DAYID, USECROSSWALK, USEROAD) VALUES (?,?,?)", (key, crosswalk, road, north, east))
 
         #Insert values into Frame
         for key, value in dict_frame_time_stamp.items():
