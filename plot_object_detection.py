@@ -55,8 +55,12 @@ if len(sys.argv) == 1: # default to current time
 temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/" + current_date
 xml_output_dir = "/raid/AoT/image_label_xmls/" + output_dir_date # directory is created if it does not exist later
 
-for filename in os.listdir(temp_image_dir):
+for filename in os.listdir(temp_image_dir): # raw image directory
     for picture in os.listdir(temp_image_dir + filename):
+        # print("Pic: ", picture)
+        if os.path.getsize((os.path.join(temp_image_dir + filename, picture))) <= 0:
+            print("Corrupted file found, terminating program")
+            quit() 
         IMAGE_PATHS.append(os.path.join(temp_image_dir + filename, picture))
 
 # Download and extract model
