@@ -6,7 +6,6 @@ from datetime import datetime
 import time
 import sqlite3
 
-#code isn't the most efficient at the moment
 #Some improvements: Do the hourly and master plots at the same time
 #                   Only pull information from the database once
 def draw_lines(date):

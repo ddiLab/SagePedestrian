@@ -686,7 +686,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
             except Exception as e:
                 print("Exception thrown:", str(e))
                 continue
-    """
+
     # Create .csv files - used for tracing trajectories or other analytical jobs
     # create file with people and their coordinates
     import csv
@@ -711,7 +711,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
     for key, value in dict_frame_time_stamp.items():
         writer.writerow([key, value])
     c_file.close()
-    """
 
     #DATABASE PORTION BELOW
     #plot = True    # for db connection testing short periods of time
@@ -746,12 +745,14 @@ def main(interval = -1, date = None, plot = False, initial=True):
             north = 1 if (value[0][1] - value[-1][1] >= 0) else 0
             east = 1 if (value[0][0] - value[-1][0] < 0) else 0
             db_cursor.execute("INSERT INTO Person (DAYID, USECROSSWALK, USEROAD, NS, EW) VALUES (?,?,?,?,?)", (key, crosswalk, road, north, east))
+            print("Inserted: ", key, road, crosswalk, north, east)
 
         #Insert values into Frame
         for key, value in dict_frame_time_stamp.items():
             new_date = value[0] + "T" + value[1].replace('+0000','')
             path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
             db_cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (?,?,?)", (str(new_date), str(path), int(key)))
+            print("Inserted: ", new_date, path, key)
 
         #insert values into Coordinate and Contains tables.
         for key, frame_id_array in dict_person_assigned_number_frames.items():
