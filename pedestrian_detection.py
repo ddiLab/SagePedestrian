@@ -745,7 +745,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
             crosswalk = 1 if key in dict_person_use_the_crosswalk else 0
             north = 1 if (value[0][1] - value[-1][1] >= 0) else 0
             east = 1 if (value[0][0] - value[-1][0] < 0) else 0
-            db_cursor.execute("INSERT INTO Person (DAYID, USECROSSWALK, USEROAD) VALUES (?,?,?)", (key, crosswalk, road, north, east))
+            db_cursor.execute("INSERT INTO Person (DAYID, USECROSSWALK, USEROAD, NS, EW) VALUES (?,?,?,?,?)", (key, crosswalk, road, north, east))
 
         #Insert values into Frame
         for key, value in dict_frame_time_stamp.items():
