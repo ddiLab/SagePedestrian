@@ -744,8 +744,8 @@ def main(interval = -1, date = None, plot = False, initial=True):
         for key, value in person_pos.items():
             road = 1 if key in dict_person_crossed_the_road else 0       #set road and crosswalk flags in the cords csv file
             crosswalk = 1 if key in dict_person_use_the_crosswalk else 0
-            north = 1 if (value[0][1] - value[-1][1] >= 0) else 0
-            east = 1 if (value[0][0] - value[-1][0] < 0) else 0
+            east = 0 if (value[0][1] - value[-1][1] >= 0) else 1
+            north = 1 if (value[0][0] - value[-1][0] < 0) else 0
             db_cursor.execute("INSERT INTO Person (PERMAID, DAYID, USECROSSWALK, USEROAD, NS, EW) VALUES (?,?,?,?,?,?)", (int(latest_id+key), key, crosswalk, road, north, east))
 
         #Insert values into Frame
