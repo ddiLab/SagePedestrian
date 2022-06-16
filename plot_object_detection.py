@@ -73,9 +73,9 @@ def download_model(model_name, model_date):
     return str(model_dir)
 
 MODEL_DATE = '20200711'
-MODEL_NAME = 'efficientdet_d4_coco17_tpu-32'
+#MODEL_NAME = 'efficientdet_d4_coco17_tpu-32'
 #Original model below - takes longer and has a bit less accuracy, MODEL_DATE is the same for both models
-#MODEL_NAME = 'centernet_hg104_1024x1024_coco17_tpu-32'
+MODEL_NAME = 'centernet_hg104_1024x1024_coco17_tpu-32'
 PATH_TO_MODEL_DIR = download_model(MODEL_NAME, MODEL_DATE)
 
 # %%
