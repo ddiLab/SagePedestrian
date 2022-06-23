@@ -2,7 +2,9 @@ CREATE TABLE Person(
    PERMAID       INTEGER    PRIMARY KEY,
    DAYID         INTEGER    NOT NULL,
    USECROSSWALK  BIT(1) DEFAULT 0,
-   USEROAD       BIT(1) DEFAULT 0
+   USEROAD       BIT(1) DEFAULT 0,
+   NS            BIT(1),
+   EW            BIT(1)
 );
 
 

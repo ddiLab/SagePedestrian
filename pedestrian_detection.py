@@ -779,7 +779,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 frame_id = frame_id_array[i]        #use indicies to skip first frame in dictionary. CSV File has extra frame at start, but person_cords csv has # of frames - 1
                 coord = person_pos[key][i-1]        #get the coordinates of the current frame in array
                 timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
-                timestamp = timestamp.replace('+0000', '')
+                timestamp = str(timestamp.replace('+0000', ''))
                 cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (%s,%s,%s,%s)", 
                                 (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
                 cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (%s,%s)", (int(latest_id+key), timestamp) )
