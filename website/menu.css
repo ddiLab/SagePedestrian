@@ -11,10 +11,18 @@
 .mastercell2{
     text-align: center;
     background-color: black;
-    width: 75%;
-    height: auto;
     padding: 5px;
     border-radius:20px;
+}
+.graphcell {
+    text-align: center;
+    background-color: black;
+    padding: 5px;
+    border-radius: 20px;
+}
+.graph{
+    width: 90%;
+    height:auto;
 }
 .topnav {
     background-color: rgb(20, 18, 18);
@@ -47,6 +55,12 @@
     width: 70%;
     height: auto;
 }
+.stats {
+    background-color: rgb(199, 25, 25);
+    width: 33%;
+    margin: auto;
+    border-radius: 20px;
+}
 .body1 {
     background-image: url('Background Image - Final.jpg');
     background-attachment: fixed;
@@ -59,11 +73,6 @@
 }
 h1{
     text-align: center;
-}
-img{
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
 }
 .button{
     color: black;
@@ -163,6 +172,13 @@ img{
     height:2px;
     margin: 5px auto;
     background-color: #ffffff5e;
+}
+.bar3{
+    display: block;
+    width: 100%;
+    height:4px;
+    margin: 3px auto;
+    background-color: white;
 }
 .ldirectional{
     margin: 3px;

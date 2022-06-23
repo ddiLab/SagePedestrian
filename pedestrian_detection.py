@@ -8,6 +8,7 @@ from shutil import copyfile
 import xml.etree.ElementTree as ET
 import sys
 import math
+import subprocess
 from numpy.core.fromnumeric import var
 
 sys.path.insert(1, './deep-person-reid/')
@@ -720,27 +721,43 @@ def main(interval = -1, date = None, plot = False, initial=True):
     #plot = True    # for db connection testing short periods of time
     if plot: #plot is set to true or false from plot_object_detection.py depending on the hour has changed or not
         import sqlite3
-        #Create connection to database
+        import server_info
+        
+        connection = server_info.connect_to_database()
+        
+        #can't connect to db
+        if connection is None:
+            print("Could not connect to database. Try again idiot")
+            return
+        
+        cursor = connection.cursor(buffered = True, dictionary = True)
+
+        """
+        #Create connection to database - SQLITE3
         db_path = "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
         db_connection = sqlite3.connect(db_path)
         db_cursor = db_connection.cursor()
         #check if current date exists within the database
-        most_recent_date = db_cursor.execute("SELECT DATE FROM Frame ORDER BY DATE DESC LIMIT 1;")
-        date = str(most_recent_date.fetchone())
-        date = date + "+0000"
+        """
+        #most_recent_date = cursor.execute("select DATE from Frame ORDER BY DATE DESC LIMIT 1;")
+        #date = str(most_recent_date.fetchone())
+        #date = date + "+0000"
 
-        if( date == new_file_path ):
-            print("Yes match") 
-            return                      #return if date already exists ( for now )
+        #if( date == new_file_path ):
+            #print("Date already exists")
+            #return                      #return if date already exists ( for now )
 
         latest_id = 0                   #get most recent id in data
-        largest_id = db_cursor.execute("SELECT PERMAID FROM Person ORDER BY PERMAID DESC LIMIT 1;")
-        new_id = largest_id.fetchone()  #fetch the latest id if it exists for later use
-        if new_id is not None:
-            latest_id = new_id[0]
-            print("Latest ID ", latest_id)
-        else:
-            print("Database empty")     #temporary
+        cursor.execute(f"SELECT PERMAID FROM Person ORDER BY PERMAID DESC LIMIT 1;")
+        result = cursor.fetchone()
+
+        if result is not None:
+            new_id = result["PERMAID"]
+            if new_id is not None:
+                latest_id = new_id
+                print("Latest ID ", latest_id)
+            else:
+                print("Database empty")     #temporary
 
         #insert values into person
         for key, value in person_pos.items():
@@ -748,13 +765,13 @@ def main(interval = -1, date = None, plot = False, initial=True):
             crosswalk = 1 if key in dict_person_use_the_crosswalk else 0
             east = 0 if (value[0][1] - value[-1][1] >= 0) else 1
             north = 1 if (value[0][0] - value[-1][0] < 0) else 0
-            db_cursor.execute("INSERT INTO Person (PERMAID, DAYID, USECROSSWALK, USEROAD, NS, EW) VALUES (?,?,?,?,?,?)", (int(latest_id+key), key, crosswalk, road, north, east))
+            cursor.execute("INSERT INTO Person (PERMAID, DAYID, USECROSSWALK, USEROAD, NS, EW) VALUES (%s,%s,%s,%s,%s,%s)", (int(latest_id+key), key, crosswalk, road, north, east))
 
         #Insert values into Frame
         for key, value in dict_frame_time_stamp.items():
             new_date = value[0] + "T" + value[1].replace('+0000','')
             path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
-            db_cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (?,?,?)", (str(new_date), str(path), int(key)))
+            cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (%s,%s,%s)", (str(new_date), str(path), int(key)))
 
         #insert values into Coordinate and Contains tables.
         for key, frame_id_array in dict_person_assigned_number_frames.items():
@@ -763,25 +780,25 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 coord = person_pos[key][i-1]        #get the coordinates of the current frame in array
                 timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
                 timestamp = timestamp.replace('+0000', '')
-                db_cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (?,?,?,?)", 
+                cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (%s,%s,%s,%s)", 
                                 (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
-                db_cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (?,?)", (int(latest_id+key), timestamp) )
+                cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (%s,%s)", (int(latest_id+key), timestamp) )
 
         #commit changes to database
-        db_connection.commit()
+        connection.commit()
         #close connection to database
-        db_connection.close()
+        connection.close()
 
         # Print still image of hourly crosswalk trajectories
-        print("Tracing trajectories...")
-        from plot_lines import draw_lines
-        draw_lines(var_date_str)
+        #print("Tracing trajectories...")
+        #from plot_lines import draw_lines
+        #draw_lines(var_date_str) #TODO: Mirgrate to mariadb 
 
         #create video of day/hour
-        out = cv2.VideoWriter('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + '/crosswalk_detection.mp4',cv2.VideoWriter_fourcc(*'mp4v'),15,size)
-        for i in range(len(image_list)):
-            out.write(image_list[i])
-        out.release()
+        #out = cv2.VideoWriter('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + '/crosswalk_detection.mp4',cv2.VideoWriter_fourcc(*'mp4v'),15,size)
+        #for i in range(len(image_list)):
+            #out.write(image_list[i])
+        #out.release()
 
 if __name__ == '__main__':
     main()
