@@ -46,31 +46,16 @@
 		                            </br></br>
                                     <table class="center" >
                                         <tr>
-                                            <th class="border">Directional Filters</th>
-                                            <th class="border">Raw vs. Cleaned</th>
-                                            <th class="border">Used Crosswalk / Crossed Road</th>
+                                            <th class="border" colspan=3>Used Crosswalk / Crossed Road</th>
                                         </tr>
                                         <tr>
-                                            <td class="border">
-                                                <div class="ldirectional">
-                                                    <input type="checkbox" name="north" checked="checked" value=10/> North</br>
-                                                    <input type="checkbox" name="west" checked="checked" value=11/> West</br>
-                                                    <input type="checkbox" name="east" checked="checked" value=12/> East<br> 
-                                                    <input type="checkbox" name="south" checked="checked" value=13/> South</br>
-                                                </div>
-                                            </td>
-                                            <td class="border">
-                                                <div class="rdirectional">
-                                                    <input type="radio" checked="checked" name="raw" value="true"/>Raw</br>
-                                                    <div class="tooltip"><input type="radio" name="raw" value="false"/>Cleaned<span class="tooltiptext">Cleaned: outliers removed from data set</span></br></div>
-                                                </div>
-                                            </td>
-                                            <td class="border">
+                                            <td class="border" colspan=3>
                                                 <div style="text-align: left; margin: 3px;">
                                                     <input type="radio" name="xwalkOpts" checked="checked" value=0/>All options</br>
                                                     <input type="radio" name="xwalkOpts"  value=1/>Neither crosswalk/road used</br>
-                                                    <input type="radio" name="xwalkOpts" value=2/>Used Road</br>
-                                                    <input type="radio" name="xwalkOpts" value=3/>Used Crosswalk</br>
+                                                    <input type="radio" name="xwalkOpts" value=2/>Only Road</br>
+                                                    <input type="radio" name="xwalkOpts" value=3/>Only Crosswalk</br>
+                                                    <input type="radio" name="xwalkOpts" value=4/>Both Crosswalk and Road</br>
                                                 </div>
                                             </td>
                                         </tr>
@@ -78,7 +63,7 @@
                                             <td colspan="4" style="text-align: center;">
                                                 <span class="bar3"></span>
                                                 <h3>Time Range (Default is the entire day)</h3>
-                                                <h4>Hours with valid data: 8am - 5pm</h4>
+                                                <h4>Hours with valid data: 8:00am - 5:00pm</h4>
                                             </td>
                                         </tr>
                                         <tr style="text-align: center;">
@@ -88,7 +73,7 @@
                                             </td>
                                             <td colspan="2">
                                                 <label for="timestop">Time Stop:</br></label>
-                                                <input type="time" value="17:00" id="timetop" name="timestop" />
+                                                <input type="time" value="17:59" id="timestop" name="timestop" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -118,36 +103,30 @@
                         if(!isset($_GET["date"])) return;
                         
                         $user_date = $_GET["date"];
-
                         $xwalk_opts = $_GET["xwalkOpts"];
-
                         $time_start = $_GET["timestart"];
                         $time_stop = $_GET["timestop"];
-
-                        $north = $_GET["north"];
-                        $east = $_GET["east"];
-                        $south = $_GET["south"];
-                        $west = $_GET["west"];
-
-                        $raw = $_GET["raw"];
         
-                        $query = set_query($user_date, $xwalk_opts, $time_start, $time_stop, $north, $east, $south, $west, $raw);
+                        $query = set_query($user_date, $xwalk_opts, $time_start, $time_stop);
 
                         //echo "Query: " . $query;
                         //echo "<br>";
-                        $command = "python3 process_image.py \"" . $query . "\" " . $user_date;
+                        $command = "python3 ./process_image.py \"" . $query . "\" " . $user_date;
                         //echo "Command: " . $command;
                         //echo "<br>";
                         $output =null;
                         $retval =null;
                         exec($command,$output,$retval);
-                        //echo '<p>' . $output[0] . '</p>';
+                        //foreach ($output as $res)
+                        //{
+                           // echo '<script>alert("' . $output[0] . '");</script>';
+                        //}
                         $no_data = false;
                         if($output[0] == "No data available"){
-                            echo '<script>alert("No data in database for this day");</script>';
+                            echo '<script>alert("No data in database for this day or time range");</script>';
                         }
                         if(($user_date != null) && ($output[0] != "No data available")){
-                            echo '<img src="./images/user_img.jpg" alt="Temporary display" class="traj-img">';
+                            echo "<img src='./images/user_img.jpg' alt='Temporary display' class='traj-img'>";
                         }else{
                             $no_data = true;
                             echo '<p>Image not available</p>';
@@ -164,7 +143,6 @@
                 echo '<td class="graphcell">';
                     if(!$no_data) {
                         echo '<img src="./images/uses_per_hour.png" alt="Graph" class="graph">';
-                        //echo '<img src="./images/xwalk_per_hr.png" alt="Graph" class="graph">';
                     }
                     else{
                         echo "<p>Graph not available</p>";
@@ -173,12 +151,29 @@
                 echo '<td class="graphcell">';
                     if(!$no_data) {
                         echo '<img src="./images/xwalk_pie_per_hr.png" alt="Pie Chart" class="graph">';
-                        //echo '<img src="./images/xwalk_per_hr.png" alt="Graph" class="graph">';
                     }
                     else{
                         echo "<p>Graph not available</p>";
                     }
                 echo "</td>";
+                echo '<td class="graphcell">';
+                    if(!$no_data) {
+                        echo '<img src="./images/crosswalk_heatmap.png" alt="Pie Chart" class="graph">';
+                    }
+                    else{
+                        echo "<p>Graph not available</p>";
+                    }
+                echo "</td>";
+            echo "</tr>";
+            echo "<tr>";
+            echo '<td class="graphcell">';
+                if(!$no_data) {
+                    echo '<img src="./images/crosswalk_line_chart.png" alt="Line Graph" class="graph">';
+                }
+                else{
+                    echo "<p>Graph not available</p>";
+                }
+            echo "</td>";
             echo "</tr>";
         echo "</table>";
     ?>
@@ -187,58 +182,56 @@
 </html>
 
 <?php
-class PedestrianDetectionDB extends SQLite3 {
-    function __construct() {
-        $this->open('./db/pedestrian_detections.db');
-    }
-}
 
 function connectToDB() { return (new PedestrianDetectionDB()); }
 
-function set_query($date, $xwalk_opts, $time_start, $time_stop, $north, $east, $south, $west, $raw) {
+function set_query($date, $xwalk_opts, $time_start, $time_stop) {
 
     $return_query = "";
-    $start = "08:00";
-    $stop = "17:00";
+    $start = "13:00";
+    $stop = "22:59";
     if(isset($time_start) && $time_start !== "") {
-        $start = $time_start;
+        //add 5 to the time to match offset of camera
+        $hoursub = substr($time_start, -5, 2);
+        $minutesub = substr($time_start, -2);
+        $intvalue = intval($hoursub);
+        $intvalue = $intvalue + 5;
+        $new_hr_str = strval($intvalue);
+        $concat = $new_hr_str . ":" . $minutesub;
+        $start = $concat;
     }
 
     if(isset($time_stop) && $time_stop !== "") {
-        $stop = $time_stop;
+        //add 5 to the time to match offset of camera
+        $hoursub = substr($time_stop, -5, 2);
+        $minutesub = substr($time_stop, -2);
+        $intvalue = intval($hoursub);
+        $intvalue = $intvalue + 5;
+        $new_hr_str = strval($intvalue);
+        $concat = $new_hr_str . ":" . $minutesub;
+        $stop = $concat;
     }
 
-    $start = $date . "T" . $start . ":00";
-    $stop = $date . "T" . $stop . ":00";
+    $start = $date . " " . $start . ":00";
+    $stop = $date . " " . $stop . ":59";
 
     $opt = (int)$xwalk_opts;
     switch($opt) {
         case 0:
-            $return_query = "SELECT PERMAID,XCOORD,YCOORD from Coordinate where DATE like '" . $date . "%'
-                                and datetime(DATE) >= datetime('" . $start . "')
-                                and datetime(DATE) <= datetime('" . $stop . "');";
+            $return_query = "SELECT PERMAID,XCOORD,YCOORD from Coordinate where DATE >= DATE('" . $start . "') and DATE <= DATE('" . $stop . "')+1;";
             break;
 	    case 1:
-            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in 
-                    (select PERMAID from Person where USEROAD==0 and USECROSSWALK==0 
-                        intersect select PERMAID from Contains where DATE like '" . $date . "%'
-                        and datetime(DATE) >= datetime('" . $start . "')
-                        and datetime(DATE) <= datetime('" . $stop . "'));";
+            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=0 and USECROSSWALK=0 intersect select PERMAID from Contains where DATE >= DATE('" . $start . "') and DATE <= DATE('" . $stop . "')+1);";
 	        break;
 	    case 2:
-            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in 
-                    (select PERMAID from Person where USEROAD==1 and USECROSSWALK==0 
-                        intersect select PERMAID from Contains where DATE like '" . $date . "%'
-                        and datetime(DATE) >= datetime('" . $start . "')
-                        and datetime(DATE) <= datetime('" . $stop . "'));";
+            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 and USECROSSWALK=0 intersect select PERMAID from Contains where DATE >= DATE('" . $start . "') and DATE <= DATE('" . $stop . "')+1);";
 	        break;
 	    case 3:
-            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in 
-                    (select PERMAID from Person where USEROAD==1 and USECROSSWALK==1 
-                        intersect select PERMAID from Contains where DATE like '" . $date . "%'
-                        and datetime(DATE) >= datetime('" . $start . "')
-                        and datetime(DATE) <= datetime('" . $stop . "'));";
+            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 and USECROSSWALK=1 intersect select PERMAID from Contains where DATE >= DATE('" . $start . "') and DATE <= DATE('" . $stop . "')+1);";
 	        break;
+        case 4:
+            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 intersect select PERMAID from Contains where DATE >= DATE('" . $start . "') and DATE <= DATE('" . $stop . "')+1);";
+            break;
     }
     return $return_query;
 }

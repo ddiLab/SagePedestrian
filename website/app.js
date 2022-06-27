@@ -1,6 +1,6 @@
-const burger_style = document.querySelector(".burger-style");
-const navbar_menu = document.querySelector(".navbar-menu");
 
+const burger_style = document.querySelector(".burger-style");
+const navbar_menu = document.querySelector(".navbar-menu"); 
 burger_style.addEventListener("click", () => {
     burger_style.classList.toggle("active");
     navbar_menu.classList.toggle("active");
@@ -15,9 +15,4 @@ function find_trajectories() {
         document.getElementById('date_alert').innerHTML = 'Please enter a valid date';
         console.log("Invalid");
     }
-    //NEED TO ADD CHECK TO MAKE SURE THE DATABASE HAS THE DATE WITHIN IT <------------------------------------------------------------------
 }
-//document.querySelectorAll(".navbar-menu-item").forEach(n => n.addEventListener("click", () => {
-  //  burger_style.classList.remove("active");
-    //navbar_menu.classList.remove("active");
-//}))

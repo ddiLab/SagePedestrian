@@ -5,18 +5,18 @@
     width: 25%;
     height: auto;
     padding: 5px;
-    background-color: black;
+    background-color: white;
     border-radius: 20px;
 }
 .mastercell2{
     text-align: center;
-    background-color: black;
+    background-color: white;
     padding: 5px;
     border-radius:20px;
 }
 .graphcell {
     text-align: center;
-    background-color: black;
+    background-color: white;
     padding: 5px;
     border-radius: 20px;
 }
@@ -25,30 +25,33 @@
     height:auto;
 }
 .topnav {
-    background-color: rgb(20, 18, 18);
-    border: 4px solid rgb(199, 25, 25);
+    background-color: white;
+    border: 4px solid #8AA574;
     overflow: hidden;
     text-align: center;
+    color: black
 }
 .topnav2 {
-    background-color: rgb(48,44,44);
+    background-color: #8AA574;
     overflow: hidden;
     text-align: center;
     border-radius: 20px;
     padding: 10px;
     font-size: 12px;
+    color: black
 }
 .topnav3 {
-    background-color: rgb(138, 29, 29);
+    background-color: #8AA574(138, 29, 29);
     overflow: hidden;
     text-align: center;
     border-radius: 20px;
     padding: 10px;
     position: relative;
     font-size: 12px;
+    
 }
 .traj-img{
-    border: 5px solid white;
+    border: 5px solid #8AA574;
     position: relative;
     float: none;
     display: inline;
@@ -56,35 +59,18 @@
     height: auto;
 }
 .stats {
-    background-color: rgb(199, 25, 25);
+    background-color: #8AA574;
     width: 33%;
     margin: auto;
     border-radius: 20px;
 }
-.body1 {
-    background-image: url('Background Image - Final.jpg');
-    background-attachment: fixed;
-    background-size: cover;
-    color:#FFFFFF;
-}
+
 .body2 {
-    background-color: #333;
-    color:#FFFFFF;
+    background-color: #8AA574;
+    color:black;
 }
 h1{
     text-align: center;
-}
-.button{
-    color: black;
-    text-align: center;
-    background-color: rgba(221, 58, 58, 0.815);
-    text-decoration: none;
-    border-radius: 20px;
-    padding: 20px;
-}
-.button:hover{
-    background-color: rgba(189, 179, 179, 0.815);
-    transition: 0.7s;
 }
 .botleft{
     color: #FFFFFF;
@@ -106,19 +92,10 @@ h1{
     padding: 5px;
     border: none;
 }
-.navbar{
-    background-color: rgb(20, 18, 18);
-    border: 4px solid rgb(199, 25, 25);
-    min-height: 70px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: fixed;
-    width: 99%;
-}
+
 .navbar2{
-    background-color: rgb(20, 18, 18);
-    border: 4px solid rgb(199, 25, 25);
+    background-color: white;
+    border: 4px solid #8AA574;
     min-height: 70px;
     display: flex;
     justify-content: space-between;
@@ -131,23 +108,25 @@ h1{
     align-items: center;
     z-index: 1000;
     gap: 55px;
-    background-color: #FFFFFF;
+    background-color: #8AA574;
 }
 .navbar-name{
+    font-weight: 800; 
+    font-family:'Open Sans', sans-serif;
     font-size: 2rem;
-    color: #FFFFFF;
+    color: #8AA574;
     text-decoration: none;
     padding: 5px;
     margin: 0;
 }
 .navbar-menu-item{
-    color: #FFFFFF;
+    color: white;
     font-size: 30px;
     text-decoration: none;
     transition: .2s ease-in;
 }
 .navbar-menu-item:hover{
-    color: rgba(199, 192, 192, 0.815);
+    color: grey;
 }
 *{
     padding:0;
@@ -164,7 +143,7 @@ h1{
     margin: 5px auto;
     -webkit-transition: all 0.3s ease-in-out;
     transition: all 0.3s ease-in-out;
-    background-color: #FFFFFF;
+    background-color: black;
 }
 .bar2{
     display: block;
@@ -196,7 +175,7 @@ h1{
 .tooltip .tooltiptext {
     visibility: hidden;
     background-color: #333;
-    color: #FFFFFF;
+    color: black;
     text-align: center;
     width: 120px;
     padding: 5px 0;
@@ -239,7 +218,7 @@ h1{
         top: 70px;
         gap: 10px;
         flex-direction:column;
-        background: #333;
+        background: #8AA574;
         width: 30%;
         text-align: center;
         transition: 0.3s;
@@ -248,7 +227,7 @@ h1{
         margin: 16px;
     }
     .navbar-menu.active{
-        background-color: rgba(0, 0, 0, 0.815);
+        background-color: #8AA574;
         left: 69.05%;
     }
 }
