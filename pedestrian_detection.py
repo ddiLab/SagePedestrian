@@ -715,7 +715,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
     c_file.close()
     """
 
-    plot = True
 
     #DATABASE PORTION BELOW
     #plot = True    # for db connection testing short periods of time
