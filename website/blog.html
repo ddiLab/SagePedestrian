@@ -14,7 +14,7 @@
             </a>
             <ul>
                 <li class="navlist">
-                    <a href="trajectories.php" class="textdecor">Debug/Filter</a>
+                    <a href="restructure.php" class="textdecor">Debug/Filter</a>
                 </li>
                 <li class="navlist">
                     <a href="blog.html" class="textdecor">The Process</a>
@@ -86,7 +86,8 @@
                     At the end of training, these models aim to generate invariant multi-dimensional features of a pedestrian from different angles, distance, clothes, etc. 
                     In this study, we have leveraged a deep learning-based model deep-person-reid [7,8] to generate such features of each pedestrian detected in the frame to compare 
                     with the pedestrians from the following frames for re-identification. The model generates 1024-dimensional features for each pedestrian cropped in a rectangular box. 
-                    The cosine similarity is calculated for feature vectors of one frame against successive frames. Pedestrians are considered same if they have high
+                    The cosine similarity is calculated for feature vectors of one frame against successive frames. 
+                    <br> &emsp;&emsp; Pedestrians are considered same if they have high
                     cosine score, hence, assigned the same pedestrian id. In other cases where cosine similarity is below a pre-defined threshold, both pedestrians 
                     are assigned different ids. Low matching score may also happen where pedestrian is partially occluded by a car or another pedestrian in next frame, 
                     the similarity score gets very low. To mitigate this issue, the algorithm compared the current frame against last 6 consecutive frames to avoid 
@@ -106,8 +107,8 @@
                     Subtracting the 2nd metric from 1st one will give the count of crosswalk violations. To compute these metrices, 
                     it is important to locate the street and crosswalk in the image. Fortunately, in this case, the camera is installed 
                     on a fixed lightpole which didn't shake or vibrate significantly due to wind or heavy vehicles. 
-                    Taking advantage of it, we pre-set the location of crosswalk and street in the image  
-                    While the pre-set of crosswalk is represented in a form of convex polygon, 
+                    Taking advantage of it, we pre-set the location of the crosswalk and street in the image. <br> &emsp;&emsp; 
+                    While the crosswalk is represented in a form of convex polygon, 
                     both sides of the street are depicted by two parallel straight lines. 
                     These representations helped to determine the location of any pedestrian with respect to the crosswalk and the street. 
                     To recall, a pedestrian's location in the image is stored as the four coordinates of the bounding rectangular box. 
