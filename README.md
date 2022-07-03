@@ -23,8 +23,6 @@ Object Detection Tutorial: https://tensorflow-object-detection-api-tutorial.read
 
 Deep Re-id: https://github.com/KaiyangZhou/deep-person-reid  
 
-Sqlite3: https://docs.python.org/3/library/sqlite3.html 
-
 Cronjob Tutorial: https://www.hostinger.com/tutorials/cron-job 
 
 Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_anznBg6y3VhuSMcpN9oe 
@@ -59,28 +57,23 @@ Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_a
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Database
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Database Path** : "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
+**Database on snick.cs.niu.edu using mariadb under database pedestrian**
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**BEFORE RUNNING ANY COMMANDS, IT IS HELPFUL TO DO THESE COMMANDS TO MAKE THE QUERIES MORE READABLE:**
-1)      .header on
-2)      .mode column
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Helpful Sqlite3 commands:**
+
+**Helpful MySQL commands:**
 
 **Select all the people in a specific day with their coordinates** - select PERMAID,XCOORD,YCOORD from Coordinate where DATE like 'yyyy-mm-dd%';
- - to get specific times use YYYY-MM-DDTHH:MM:SS
+ - to get specific times use YYYY-MM-DD HH:MM:SS
  
-**Find ID's of the people who have crossed the road** - select PERMAID, USEROAD from Person where USEROAD == 1;
+**Find ID's of the people who have crossed the road** - select PERMAID, USEROAD from Person where USEROAD = 1;
 - replace USEROAD with USECROSSWALK for crosswalk
 
 **Find out what days are in the database** - select DATE from Frame where DATE like 'yyyy-mm-dd%';
 
-**Find the total number of people who used the crosswalk** - select count(PERMAID) from Person where USECROSSWALK == 1;
+**Find the total number of people who used the crosswalk** - select count(PERMAID) from Person where USECROSSWALK = 1;
 
 **Find the number of people who used the crosswalk in a certain day** - select count(a.PERMAID) from 
-( select PERMAID from Person where USECROSSWALK == 1 INTERSECT select PERMAID from Contains where DATE LIKE '2022-05-09%' ) as a;
-
-**Tutorial** - https://www.sqlitetutorial.net/sqlite-describe-table/ 
+( select PERMAID from Person where USECROSSWALK = 1 INTERSECT select PERMAID from Contains where DATE LIKE '2022-05-09%' ) as a;
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -88,37 +81,47 @@ Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_a
 
 **Person**
 ```
-cid  name          type     notnull  dflt_value  pk
----  ------------  -------  -------  ----------  --
-0    PERMAID       INTEGER  0                    1
-1    DAYID         INTEGER  1                    0
-2    USECROSSWALK  BIT(1)   0        0           0
-3    USEROAD       BIT(1)   0        0           0
++--------------+-------------+------+-----+---------+-------+
+| Field        | Type        | Null | Key | Default | Extra |
++--------------+-------------+------+-----+---------+-------+
+| PERMAID      | int(11)     | NO   | PRI | NULL    |       |
+| DAYID        | int(11)     | NO   |     | NULL    |       |
+| USECROSSWALK | smallint(6) | YES  |     | 0       |       |
+| USEROAD      | smallint(6) | YES  |     | 0       |       |
+| NS           | smallint(6) | YES  |     | NULL    |       |
+| EW           | smallint(6) | YES  |     | NULL    |       |
++--------------+-------------+------+-----+---------+-------+
 ```
 **Coordinate** 
 ```
-cid  name     type       notnull  dflt_value  pk
----  -------  ---------  -------  ----------  --
-0    TOTAL    INTEGER    0                    1
-1    PERMAID  INTEGER    1                    0
-2    DATE     TIMESTAMP  1                    0
-3    XCOORD   INTEGER    0        0           0
-4    YCOORD   INTEGER    0        0           0
++---------+----------+------+-----+---------+----------------+
+| Field   | Type     | Null | Key | Default | Extra          |
++---------+----------+------+-----+---------+----------------+
+| TOTAL   | int(11)  | NO   | PRI | NULL    | auto_increment |
+| PERMAID | int(11)  | NO   | MUL | NULL    |                |
+| DATE    | datetime | NO   | MUL | NULL    |                |
+| XCOORD  | int(11)  | YES  |     | 0       |                |
+| YCOORD  | int(11)  | YES  |     | 0       |                |
++---------+----------+------+-----+---------+----------------+
 ```
 **Frame** 
 ```
-cid  name     type       notnull  dflt_value  pk
----  -------  ---------  -------  ----------  --
-0    DATE     TIMESTAMP  0                    1
-1    PATH     CHAR(128)  1                    0
-2    FRAMEID  INT        1                    0
++---------+-----------+------+-----+---------+-------+
+| Field   | Type      | Null | Key | Default | Extra |
++---------+-----------+------+-----+---------+-------+
+| DATE    | datetime  | NO   | PRI | NULL    |       |
+| PATH    | char(128) | NO   |     | NULL    |       |
+| FRAMEID | int(11)   | NO   |     | NULL    |       |
++---------+-----------+------+-----+---------+-------+
 ```
 **Contains**
 ```
-cid  name     type       notnull  dflt_value  pk
----  -------  ---------  -------  ----------  --
-0    PERMAID  INT        1                    1
-1    DATE     TIMESTAMP  1                    2
++---------+----------+------+-----+---------+-------+
+| Field   | Type     | Null | Key | Default | Extra |
++---------+----------+------+-----+---------+-------+
+| PERMAID | int(11)  | NO   | PRI | NULL    |       |
+| DATE    | datetime | NO   | PRI | NULL    |       |
++---------+----------+------+-----+---------+-------+
 ```
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ![alt text](https://github.com/ddiLab/SagePedestrian/blob/main/line_result_M.jpg?raw=true)
