@@ -8,11 +8,12 @@
         <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
         <link rel="stylesheet" href="/resources/demos/style.css">
         <link rel="stylesheet" href="./traj.css">
+        <link rel="stylesheet" href="./calendar.css">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin="" />
         <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>    
         <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
         <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-        <script src="calendar.js"></script>
+        
     </head> 
     <body style="background-color: #8AA574">
         <header>
@@ -28,6 +29,7 @@
                 <form action="restructure.php" method="GET" id="date">
                     <div style="text-align:center; display:inline-block;vertical-align:center;">
                         <input class="dateform" id="dateinput" type="text" name="date" style="margin: 0; font-size: 22px;" placeholder="Click to choose a date" />
+                        <script src="calendar.js"></script>
                     </div>
                     <div class="separate"></div>
                     <div class="xwalk">
@@ -77,13 +79,21 @@
             <?php
                 if(!isset($_GET["date"])) return;
                 
-                //calendar created from jQuery has date as mm/dd/yyyy so it needs to be restructured
-                $bad_date = $_GET["date"];
-                $year = substr($bad_date,-4);
-                $month = substr($bad_date, -10,2);
-                $day = substr($bad_date, -7,2);
-                $user_date = $year . "-" . $month . "-" . $day;
-
+                $user_date = $_GET["date"];
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo '<br>';
+                echo $user_date;
                 $xwalk_opts = $_GET["xwalkOpts"];
                 $timestop = $_GET["time"];
                 $accum = $_GET["accum"];
