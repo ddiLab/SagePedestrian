@@ -27,6 +27,9 @@ Cronjob Tutorial: https://www.hostinger.com/tutorials/cron-job
 
 Machine Learning Tutorial: https://www.youtube.com/playlist?list=PLQY2H8rRoyvz_anznBg6y3VhuSMcpN9oe 
 
+Node.js and NVM: https://ostechnix.com/install-node-js-linux/            
+
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **STEPS TO GETTING THE CODE UP AND RUNNING (on hartley):**
 
