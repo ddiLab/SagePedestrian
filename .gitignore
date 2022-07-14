@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore Node.js modules
+/website/node_modules
+
+#ignore images folder
+website/images/debug_images/
