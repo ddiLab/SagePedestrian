@@ -1,0 +1,43 @@
+.carousel {
+    width: 100%;
+    margin: 0 auto 20px;
+    text-align: center;
+    margin: auto;
+    top: 30%;
+}
+
+.carousel .im img {
+    width: 50%;
+    position: absolute;
+    left: 25%;
+    top: 126px;
+    opacity: 0;
+    transition: opacity 0s;
+    text-align: center;
+    margin: auto;
+    border: 4px solid white;
+}
+
+.carousel .im img.showplease {
+    opacity: 1;
+}
+
+.prev:before, .next:before {
+    color: #FFF;
+    font-size: 100px;
+    position: absolute;
+    top: 50%;
+    cursor: pointer;
+    left:56%;
+    right:55%
+}
+
+.prev:before {
+    content: '<';
+    left: 0;
+}
+
+.next:before {
+    content: '>';
+    right: 0;
+}

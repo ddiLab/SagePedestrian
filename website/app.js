@@ -3,7 +3,6 @@
 //Also big thanks to stack overflow for have some incredible answers.
 
 trajectories = updateTrajectoriesList();
-//printDictionary(trajectories);
 
 //width, height and url
 var w = 2560, h=1920, url='./images/image2.jpg';
@@ -99,5 +98,5 @@ function printDictionary(traj) {
 }
 
 function updateTrajectoriesList() {
-    return JSON.parse(traj);
+    return JSON.parse(traj);    //parse traj from the php file
 }

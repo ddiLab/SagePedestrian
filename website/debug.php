@@ -1,25 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-    </head>
-    <body>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Crosswalk Detection</title>
+        <link rel="stylesheet" href="./home.css">
+        <link rel="stylesheet" href="./traj.css">
+        <link rel="stylesheet" href="./debug.css">
+        <script src="./carousel.js" ></script>
+    </head> 
+    <header>
+        <nav class="navbar">
+            <a href="index.php" class="navbar-name">
+                <h1 style="font-weight: 800; font-family:'Open Sans', sans-serif; font-size: 42px; display:inline; color: #8AA574;">
+                     Sage
+                    <p style="border-top: 2px solid black; font-weight: 100; font-family:'Open Sans', sans-serif; font-size: 19px; color: black;">
+                        Crosswalk Detection
+                    </p>
+                </h1>
+            </a>
+            <ul>
+                <li class="navlist">
+                    <a href="restructure.php" class="textdecor">Debug/Filter</a>
+                </li>
+                <li class="navlist">
+                    <a href="blog.html" class="textdecor">The Process</a>
+                </li>
+                <li class="navlist">
+                    <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
+                </li>
+                <li class="navlist">
+                    <a href="https://github.com/ddiLab/SagePedestrian" class="textdecor">Github</a>
+                </li>
+                <li class="navlist">
+                    <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <body style="background-color: #8AA574">
         <?php
             $command = "python3 ./get_trajectory_images.py " . $_GET['id'];
             //echo "Command: " . $command;
             $output = null;
             $retval = null;
             exec($command,$output,$retval);
-            echo $output;
 
-            if($output == "None") exit("No information");
+            if($output[0] == "None") echo "Failure";
 
-            $handle = opendir('/var/www/html/images/debug_images/');
-            if ($handle) {
-                while (($entry = readdir($handle)) !== FALSE) {
-                    echo '<img src="' . $entry . '" >';
+            //thanks SO
+            $dir = './images/debug_images/';
+            $files = scandir($dir);
+            sort($files);
+            echo "<div class='carousel'><div class='im'>";
+            $count = 0;
+            $extension = "class=\"showplease\"";
+            foreach ($files as $file) {
+                if ($file != '.' && $file != '..') {
+                    //this is dumb but php is dumber
+                    echo ( '<img ' . $extension . ' src="' . $dir . $file . '"/>' );
+                    $extension = "";
                 }
             }
-            closedir($handle);
+            echo "<div class='buttons'>";
+            echo "<div class='prev'></div>";
+            echo "<div class='next'></div>";
+            echo "</div>";
+            echo "</div></div>";
         ?>
     </body>
 </html>

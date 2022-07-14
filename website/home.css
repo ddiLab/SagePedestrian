@@ -48,9 +48,9 @@ h1{
 .image-caption{
     color: black;
     background-color: #FFFFFF;
-    width:75%;
     padding-top:10px;
     padding-bottom:10px;
+    align-content: center;
 }
 .graph-caption{
     color:white;
@@ -62,4 +62,11 @@ h1{
     font-family:'Open Sans', sans-serif;
     text-align: center;
     font-weight: bold;
+    align-content: center;
+}
+#heatmap {
+    text-align: center;
+    margin: auto;
+    position: relative;
+    align-content: center;
 }

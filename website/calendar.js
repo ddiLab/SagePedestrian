@@ -4,12 +4,15 @@
 
 
 $(function() {
+    //hard coded works
+    /*
+    var enableDays = ['2022-07-01', '2022-07-02', '2022-07-03', '2022-07-04', '2022-07-05', '2022-06-13', '2022-06-15', '2022-06-17', '2022-06-18',
+    '2022-06-19', '2022-06-20', '2022-06-21', '2022-06-30'];
+    */
     
-    //need to find a way to get the list of dates from the database
-    var enableDays = ['2022-07-04', '2022-07-05', '2022-07-06'];
-  
-    console.log(enableDays);
-  
+    //this does not work
+    var enableDays = updateDates();
+
     function enableAllTheseDays(date) {
       var fDate = $.datepicker.formatDate('yy-mm-dd', date);
       var result = [false, ""];
@@ -18,6 +21,7 @@ $(function() {
           result = [true, "highlight-green"];
         }
       });
+      
       return result;
     }
   
@@ -28,3 +32,7 @@ $(function() {
     });
   
   });
+
+function updateDates() {
+  return JSON.parse(dates); //parse 
+}
