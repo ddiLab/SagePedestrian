@@ -1,7 +1,7 @@
 from ctypes import sizeof
 from bokeh.plotting import figure, show
 from datetime import datetime, timedelta
-from bokeh.models import DatetimeTickFormatter, ColorMapper, NumeralTickFormatter, LinearColorMapper, PrintfTickFormatter, BasicTicker, ColorBar
+from bokeh.models import DatetimeTickFormatter, ColorMapper, NumeralTickFormatter, LinearColorMapper, PrintfTickFormatter, BasicTicker, ColorBar, Range1d
 from matplotlib.pyplot import legend
 import mysql.connector as mariadb
 from datetime import timedelta
@@ -107,7 +107,7 @@ def bokeh_double_line_graph(db_cursor):
 
 
     TOOLS = "save,pan,box_zoom,reset,wheel_zoom"
-    fig = figure(x_range = days, plot_width = 1024, plot_height = 600, tools=TOOLS, toolbar_location="below")
+    fig = figure(x_range = days, y_range=Range1d(0, np.max(road_counts), bounds="auto"), plot_width = 1024, plot_height = 600, tools=TOOLS, toolbar_location="below")
     fig.line(days, xwalk_counts, line_width=2, color="red", legend_label="Crosswalk")
     fig.line(days, road_counts, line_width=2, color="blue", legend_label="Road")
     fig.xaxis.major_label_orientation = pi/4 # puts dates in a / angle 
@@ -331,7 +331,6 @@ def bokeh_heat_map(db_cursor):
     for item in readable_hours:
         days.append(str_day)
 
-    #append last day
     max_value = np.max(counts)
 
     data = {
@@ -341,9 +340,6 @@ def bokeh_heat_map(db_cursor):
     }
 
     df = pd.DataFrame(data)
-    #df['Day'] = df['Day'].astype(str)
-    #df['Hour'] = df['Hour'].astype(str)
-    
     TOOLS = "save,pan,box_zoom,reset,wheel_zoom"
     p = figure(title="Crosswalk Uses Per Day from {0} to {1}".format(day_range[0], day_range[-1]), 
                 x_range=day_range, y_range=readable_hours, width=1024, height=600, tools=TOOLS, toolbar_location="below")
@@ -352,15 +348,14 @@ def bokeh_heat_map(db_cursor):
     p.xaxis.major_label_orientation = pi / 4 #rotate 45 degrees
     p.title.text_font_size = "25px"
     p.title.align = "center" # also does left and right
+    p.grid.grid_line_color = None
+    p.axis.axis_line_color = None
 
     mapper = LinearColorMapper(palette=['#ffffe5','#fff7bc','#fee391','#fec44f','#fe9929','#ec7014','#cc4c02','#993404','#662506'], low=0, high=np.max(counts)) # TODO: FIND A GOOD SETTING FOR HIGH AND LOW FOR THE LEGEND
     color_bar = ColorBar(title="Frequency", color_mapper=mapper, major_label_text_font_size="7px",
-                     ticker=BasicTicker(desired_num_ticks=4),
+                     ticker=BasicTicker(desired_num_ticks=3),
                      formatter=PrintfTickFormatter(format="%d"),
                      label_standoff=6, border_line_color=None)
-                     
-    p.grid.grid_line_color = None
-    p.axis.axis_line_color = None
 
     hm = p.rect(x="Day", y="Hour", source=df, width = 1, height=1,
                  fill_color={'field': 'Count', 'transform': mapper}, line_color=None)

@@ -155,7 +155,6 @@ def create_line_chart(db_cursor):
     
     plt.close(fig)
 
-# THIS SCRIPT IS AUTOMATED USING CRONJOB TO RUN EVERY DAY AT 12:00AM
 def last24():
     today = date.today()
     non_string_yesterday = today - timedelta(days = 1)
@@ -205,20 +204,12 @@ def last24():
                     path_dict[perma_id] = []
                 path_dict[perma_id].append(coordinate)
 
-    #heatmap_per_hour(db_cursor)
-    #create_line_chart(db_cursor)
     print(json.dumps(path_dict)) #print the path dictionary so php can retrieve it
     bokeh_heat_map(db_cursor)
     bokeh_double_line_graph(db_cursor)
 
     db_cursor.close()
-
-    #if os.path.exists("./images/homepage.jpg"):
-        #os.remove("./images/homepage.jpg")
-
-    #cv2.imwrite('./images/homepage.jpg', master_copy)
     connection.close()
-    #print("Trajectories traced for yesterday")
 
 if __name__ == '__main__':
     last24()
