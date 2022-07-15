@@ -48,10 +48,6 @@
                 <li class="navlist">
                     <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
                 </li>
-                <li class="navlist">
-                    <a href="SageBokeh.html" class="textdecor">Testing Workspace (Temporary)</a>
-                    <!--<a href="bokehtests.html" class="textdecor">Testing Workspace (Temporary)</a> -->
-                </li>
             </ul>
         </nav>
     </header>
@@ -74,8 +70,11 @@
                     echo "<div id='map'></div>";
                     echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . ";
                                                          var item = " . json_encode(($output[1])) . ";
+                                                         var line = " . json_encode(($output[2])) . ";
                                                          item = JSON.parse(item);
+                                                         line = JSON.parse(line);
                                                          Bokeh.embed.embed_item(item);
+                                                         Bokeh.embed.embed_item(line);
                     </script>";
                     echo "<script type='text/javascript' src='app.js'></script>";
                 }
@@ -88,6 +87,7 @@
             <p class="caption">The following graphs represent the recent trends over a larger period of time.</p>
         </div>
         <br><br>
+        <!--
         <table style="margin: auto; border-spacing: 50px;">
             <tr>
                 <td>
@@ -106,7 +106,10 @@
                 </td>
             </tr>
         </table>
+        -->
         <div id="heatmap" class="mybokehplot bk-root"></div>
+        <br/>
+        <div id="doublelinegraph" class="mybokehplot bk-root"></div>
         <br>
         <hr class="solid" style="position: relative; bottom: 1px; left: 0px; width: 100%;">
         <p class="botleft">This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.</p>

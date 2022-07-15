@@ -65,8 +65,10 @@ h1{
     align-content: center;
 }
 #heatmap {
-    text-align: center;
-    margin: auto;
-    position: relative;
-    align-content: center;
+    display: flex;
+    justify-content: center;
+}
+#doublelinegraph {
+    display: flex;
+    justify-content: center;
 }

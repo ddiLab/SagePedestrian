@@ -13,6 +13,7 @@ import mysql.connector as mariadb
 import sys
 import json
 from SageBokeh import bokeh_heat_map
+from SageBokeh import bokeh_double_line_graph
 
 sys.path.insert(0, '/home/wesley/')
 import server_info
@@ -60,9 +61,6 @@ def heatmap_per_hour(db_cursor):
     for i in range(hours[0], hours[-1]-1, -1):  #finish append 0s based on the last day
         if i not in sub_hours:
             counts[hours[0]-i].append(0)
-
-    #for row in counts:
-        #print(row)
 
     #reformat hours to be more readable
     for i in range(0, len(hours), 1):
@@ -208,9 +206,10 @@ def last24():
                 path_dict[perma_id].append(coordinate)
 
     #heatmap_per_hour(db_cursor)
-    create_line_chart(db_cursor)
+    #create_line_chart(db_cursor)
     print(json.dumps(path_dict)) #print the path dictionary so php can retrieve it
     bokeh_heat_map(db_cursor)
+    bokeh_double_line_graph(db_cursor)
 
     db_cursor.close()
 
