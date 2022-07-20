@@ -1,16 +1,5 @@
-from audioop import cross
-import pathlib
-import cv2
-from shutil import copyfile
-from datetime import datetime
-import time
-import sqlite3
-import os
 import numpy as np
-import math
-import mysql.connector as mariadb
 import json
-
 import sys
 sys.path.insert(0, '/home/wesley/')
 import server_info
@@ -88,22 +77,9 @@ def uses_per_hour(db_cursor, date):
     return
 
 def main(query, date):
-    #generic image for overlaying
-    #eventually take in name of file
-    #im_path = pathlib.Path('./images/image2.jpg')
-    #image = cv2.imread(str(im_path))
-    #master_copy = image.copy()
-    #draw lines using the database
-
-    """
-    db_path = "./db/pedestrian_detections.db"
-    db_connection = sqlite3.connect(db_path)
-    db_cursor = db_connection.cursor()
-    db_cursor.execute(str(query))
-    """
     connection = server_info.connect_to_database()
     db_cursor = connection.cursor()
-    db_cursor.execute(str(query))
+    db_cursor.execute(query)
 
     record = db_cursor.fetchall() # [0] = perma id, [1] = xcoord, [2] = ycoord
     #print(record)
@@ -120,11 +96,6 @@ def main(query, date):
         for row in record:
             if(row[0] != perma_id):
                 perma_id = row[0]
-                #if(total_coords[0][1] > 1200):
-                    #master_color = (255,0,0)
-                #else:
-                    #master_color = (0,0,255)
-                #master_copy = cv2.polylines(master_copy, np.int32([total_coords]), False, master_color)
                 total_coords.clear()
                 coordinate = (row[1],row[2])
                 total_coords.append(coordinate)
@@ -143,16 +114,8 @@ def main(query, date):
         #create_line_chart(db_cursor)
         print(json.dumps(path_dict)) #print the path dictionary so php can retrieve it
 
-
     db_cursor.close()
     total_coords.clear()
-#    cv2.putText(master_copy, "East", (500,120), cv2.FONT_HERSHEY_SIMPLEX, 4, (0,0,255),6)
-#    cv2.putText(master_copy, "West", (500,260), cv2.FONT_HERSHEY_SIMPLEX, 4, (255,0,0),6)
-
-    #if os.path.exists("./images/user_img.jpg"):
-        #os.remove("./images/user_img.jpg")
-
-    #cv2.imwrite('./images/user_img.jpg', master_copy)
     connection.close()
 
 if __name__ == '__main__':

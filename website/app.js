@@ -39,15 +39,10 @@ function drawTrajectories(map, traj) {
     var linesArray = [];
     for (let [key, value] of Object.entries(traj)) {
         var color = 'red';
-        //console.log(key);
         for(var i = 0; i < value.length; i++) {
             var pt = [value[i][0], value[i][1]];
-            //console.log("Point:", pt);
             var latlongPt = map.unproject(pt, map.getMaxZoom()-1);
             latlinePoints.push(latlongPt);
-            //console.log(`${value[i][0]}`, `${value[i][1]}`);
-            //console.log("Latlong point: ");
-            //console.log(latlongPt);
         }
 
         if(value[0][1] >= 1200) color = 'blue';
@@ -59,7 +54,7 @@ function drawTrajectories(map, traj) {
             weight: 2,
             opacity: 1,
             smoothfactor: 2
-        }).bindPopup("ID: "+key);//"<a href='http://www.google.com'>" + currentId + "</a>");
+        }).bindPopup("ID: "+key);
 
         //bind mouse click on polyline to open a new window
         polyline.on('click', function() {
@@ -87,8 +82,6 @@ function drawTrajectories(map, traj) {
         polyline.addTo(map);        //add to map
         latlinePoints.length = 0;   //reset array
     }
-    //console.log("Full array: ");
-    //console.log(latlinePoints);
 }
 
 function printDictionary(traj) {
@@ -98,5 +91,7 @@ function printDictionary(traj) {
 }
 
 function updateTrajectoriesList() {
-    return JSON.parse(traj);    //parse traj from the php file
+    var result = JSON.parse(traj);
+    console.log(traj);
+    return result;    //parse traj from the php file
 }

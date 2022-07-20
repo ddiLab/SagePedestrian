@@ -3,8 +3,8 @@
         <link rel="stylesheet" href="./blog.css">
     </head>
     <header>
-        <nav class="navbar">
-            <a href="index.php" class="navbar-name">
+        <nav class="navbar3">
+            <a href="index.php" class="navbar-name3">
                 <h1 style="font-weight: 800; font-family:'Open Sans', sans-serif; font-size: 42px; display:inline; color: #8AA574;">
                      Sage
                     <p style="border-top: 2px solid black; font-weight: 100; font-family:'Open Sans', sans-serif; font-size: 19px; color: black;">
@@ -12,23 +12,42 @@
                     </p>
                 </h1>
             </a>
-            <ul>
-                <li class="navlist">
+            <div class="navbar-menu-mobile3">
+                <br>
+                <a href="restructure.php" class="textdecor">Debug/Filter</a>
+                <br><br>
+                <a href="blog.html" class="textdecor">Blog</a>
+                <br><br>
+                <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
+                <br><br>
+                <a href="https://github.com/ddiLab/SagePedestrian" class="textdecor">Github</a>
+                <br><br>
+                <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
+                <br><br>
+            </div>
+            <ul class="navbar-menu3" style="list-style: none;">
+                <li class="navlist3">
                     <a href="restructure.php" class="textdecor">Debug/Filter</a>
                 </li>
-                <li class="navlist">
+                <li class="navlist3">
                     <a href="blog.html" class="textdecor">The Process</a>
                 </li>
-                <li class="navlist">
+                <li class="navlist3">
                     <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
                 </li>
-                <li class="navlist">
+                <li class="navlist3">
                     <a href="https://github.com/ddiLab/SagePedestrian" class="textdecor">Github</a>
                 </li>
-                <li class="navlist">
+                <li class="navlist3">
                     <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
                 </li>
             </ul>
+            <div class="burger-style3">
+                <span class="bar3"></span>
+                <span class="bar3"></span>
+                <span class="bar3"></span>
+            </div>
+            <script src="burger3.js"></script>
         </nav>
     </header>
     <body class="body1">
@@ -136,6 +155,9 @@
                    to the conclusion that the crosswalk usage has drastically different statistics depending on what day of the week it is. 
                    The use of this allows us to more easily think about and picture the trends of different analyical views such as if weather is directly correlated to crosswalk usage or not.
                    <br><br>
+                   The homepage and filter page make use of the <a href="https://leafletjs.com/">Leaflet</a> library to make trajectories easily clickable for observing specific paths. 
+                   We also make use of the <a href="https://bokeh.org/">Bokeh Visualization library</a> to make interactive data charts to more easily examine the results from the database.
+                   <br/>
                     <img src="./images/blogchart.png" alt="Line Chart" style="display: block;margin-left: auto;margin-right: auto;width: 50%;">
                     <p style="display: block;margin-left: auto;margin-right: auto;width: 50%;">
                         Figure 5: Line graph depicting the peaks and dips of crosswalk usage over a range of 8 days</p>

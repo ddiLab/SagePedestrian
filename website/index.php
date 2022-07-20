@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Crosswalk Detection</title>
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
@@ -12,7 +9,6 @@
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script>
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.3.min.js"></script>
         <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-2.4.3.min.js"></script>
-        
         <script type="text/javascript">
             Bokeh.set_log_level("info");
         </script>
@@ -32,12 +28,25 @@
                     </p>
                 </h1>
             </a>
-            <ul>
+            <div class="navbar-menu-mobile">
+                <br>
+                <a href="restructure.php" class="textdecor">Debug/Filter</a>
+                <br><br>
+                <a href="blog.html" class="textdecor">Blog</a>
+                <br><br>
+                <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
+                <br><br>
+                <a href="https://github.com/ddiLab/SagePedestrian" class="textdecor">Github</a>
+                <br><br>
+                <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
+                <br><br>
+            </div>
+            <ul class="navbar-menu" style="list-style: none;">
                 <li class="navlist">
                     <a href="restructure.php" class="textdecor">Debug/Filter</a>
                 </li>
                 <li class="navlist">
-                    <a href="blog.html" class="textdecor">The Process</a>
+                    <a href="blog.html" class="textdecor">Blog</a>
                 </li>
                 <li class="navlist">
                     <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
@@ -49,6 +58,12 @@
                     <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
                 </li>
             </ul>
+            <div class="burger-style">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <script src="burger.js"></script>
         </nav>
     </header>
     <body class="body1">
@@ -57,7 +72,7 @@
             <?php
                 $date = date('Y-m-d');
                 $date = date('Y-m-d',(strtotime ( '-1 day' , strtotime ( $date) ) ));
-                echo '<div class="image-caption" style="margin:auto;width:65.3%;">';
+                echo '<div class="image-caption">';
                 echo "<p class='caption'>The following trajectories are the crosswalk detections for $date between 8am - 5pm.</p>";
                 echo '</div>';
                 echo '<br>';
@@ -67,7 +82,8 @@
                 exec($command,$output,$retval);
                 if($output[0] != "None") 
                 {
-                    echo "<div id='map'></div>";
+                    echo '<div class="image-container">';
+                    echo "<div id='map' style='width:90%;'></div>";
                     echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . ";
                                                          var item = " . json_encode(($output[1])) . ";
                                                          var line = " . json_encode(($output[2])) . ";
@@ -76,6 +92,7 @@
                                                          Bokeh.embed.embed_item(item);
                                                          Bokeh.embed.embed_item(line);
                     </script>";
+                    echo "</div>";
                     echo "<script type='text/javascript' src='app.js'></script>";
                 }
             ?>
@@ -83,35 +100,15 @@
         <br><br>
         <hr class="solid">
         <br><br>
-        <div class="image-caption" style="margin: auto; width: 60%;">
+        <div class="image-caption">
             <p class="caption">The following graphs represent the recent trends over a larger period of time.</p>
         </div>
         <br><br>
-        <!--
-        <table style="margin: auto; border-spacing: 50px;">
-            <tr>
-                <td>
-                    <div style="text-align: center; margin: auto;">
-                        <img src="./images/crosswalk_heatmap.png" alt="Heatmap" style="margin:auto;width:auto;">
-                        <p class="caption" style=" border: 5px solid #343c4d; padding: 10px; display: block; width:auto; margin:auto; background-color: #FFFFFF;">
-                            Heatmap showing which hours have the highest frequency of crosswalk usages<br>(Yellow being the most frequent, purple the least)</p>   
-                    </div>
-                </td>
-                <td>
-                    <div style="text-align: center; margin: auto;">
-                        <img src="./images/crosswalk_line_chart.png" alt="Line" style="margin:auto;width:auto;">
-                        <p class="caption" style="border: 5px solid #343c4d; padding: 10px; display:block; width:auto;margin:auto;background-color: #FFFFFF;">
-                            Line graph showing the overall trends of the amount of people using the <br> crosswalk per day</p>
-                    </div>
-                </td>
-            </tr>
-        </table>
-        -->
         <div id="heatmap" class="mybokehplot bk-root"></div>
         <br/>
         <div id="doublelinegraph" class="mybokehplot bk-root"></div>
         <br>
-        <hr class="solid" style="position: relative; bottom: 1px; left: 0px; width: 100%;">
+        <hr class="solid" style="position: relative; bottom: 1px; left: 0px;">
         <p class="botleft">This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.</p>
     </body>
 </html>

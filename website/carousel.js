@@ -5,6 +5,13 @@ window.onload = function () {
         btnNext: '.carousel .buttons .next',
         rate: 1500
     });
+
+    document.addEventListener("keydown", function(event) {
+        if(event.key !== undefined) {
+            if(event.code === "ArrowLeft") document.getElementById('previous').onclick();
+            else if(event.code === "ArrowRight") document.getElementById('next').onclick();
+        }
+    });
 };
 
 function Slider(obj) {

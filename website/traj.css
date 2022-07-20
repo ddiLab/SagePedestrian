@@ -1,4 +1,4 @@
-.navbar{
+.navbar2{
     position: fixed;
     left:0;
     top:0;
@@ -16,18 +16,12 @@
 .highlighted a {
     background:#f57d31 !important;
 }
-.navbar-name{
+.navbar-name2{
     font-size: 2rem;
     text-decoration: none;
     padding: 5px;
     margin: 0;
     color:black;
-}
-.navlist{
-    float:left;
-    list-style:none;
-    display: inline;
-    margin:1em;
 }
 .textdecor{
     text-decoration: none;
@@ -53,8 +47,11 @@
     margin:auto;
     display:inline;
 }
+.mobile-dateform{
+    display:none;
+}
 input[type=text]{
-    width:220px;
+    width:200px;
     font-family: 'Open Sans', sans-serif;
 }
 .dateform:hover{
@@ -175,4 +172,115 @@ input[type=text]{
     margin-right:30px;
     display:inline-block;
     border-radius: 8px;
+}
+.navbar-menu-mobile2{
+    display: none;
+}
+.burger-style2{
+    display: none;
+}
+.bar2{
+    display: none;
+}
+.mobilespacing{
+    display:none;
+}
+@media only screen and (max-width: 1200px) {
+    .burger-style2{
+        display: block;
+    }
+    .burger-style2.active .bar2:nth-child(3){
+        opacity: 0;
+    }
+    .burger-style2.active .bar2:nth-child(2){
+        transform: translateY(8px) rotate(45deg);
+    }
+    .burger-style2.active .bar2:nth-child(4){
+        transform: translateY(-8px) rotate(-45deg);
+    }
+    .navbar-menu-mobile2{
+        position: fixed;
+        left: 100%;
+        top: 120px;
+        gap: 10px;
+        background: #333;
+        width: 100%;
+        height: auto;
+        text-align: center;
+        transition: 0.3s;
+        display: block;
+        font-size: 30px;
+    }
+    .navbar-menu-mobile2.active{
+        background-color: rgba(51, 51, 51);
+        left: 0%;
+        width: 100%;
+        height: auto;
+        background: gray;
+        color: black;
+        top: 275px;
+        font-size: 30px;
+        display: block;
+        text-align: left;
+    }
+    .bar2{
+        display: block;
+        width: 25px;
+        height: 3px;
+        margin: 5px auto;
+        -webkit-transition: all 0.3s ease-in-out;
+        transition: all 0.3s ease-in-out;
+        background-color: #333;
+    }
+    .textdecor{
+        text-decoration: none;
+        font-size: 50px !important;
+        color:rgba(0, 0, 0, 0.753);
+        font-weight: lighter;
+        font-family: 'Open Sans', sans-serif;
+    }
+    .navbar-menu2{
+        display: none;
+    }
+    .xwalk{
+        display: none;
+    }
+    .mobilespacing{
+        display:unset;
+    }
+    .ui-datepicker table{
+        background-color: gray;
+    }
+    .ui-datepicker a {
+        text-decoration: none;
+    }
+    .ui-datepicker-header {
+        background-color: #8AA574;
+        color: black;
+        font-weight: bold;
+        line-height: 30px;
+        border-width: 1px 0 0 0;
+        border-style: solid;
+        border-color: #111;
+    }
+    .ui-datepicker-title {
+        text-align: center;
+    }
+    .ui-datepicker-next {
+        display: inline;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        float:right;
+        color: black;
+    }
+    .slider, .ui-slider-horizontal {
+        width: 60%;
+        height: 2.4px;
+        cursor:pointer;
+        box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+        background: #8AA574;
+        border-radius: 25px;
+        border: 0.2px solid #010101;
+    }
 }

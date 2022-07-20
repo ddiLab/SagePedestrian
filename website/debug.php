@@ -3,7 +3,6 @@
     <head>
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Crosswalk Detection</title>
         <link rel="stylesheet" href="./home.css">
         <link rel="stylesheet" href="./traj.css">
@@ -42,6 +41,7 @@
     <body style="background-color: #8AA574">
         <?php
             $command = "python3 ./get_trajectory_images.py " . $_GET['id'];
+            if(!is_numeric($_GET['id'])) { echo "Failure"; return; }    //must be a number
             //echo "Command: " . $command;
             $output = null;
             $retval = null;
@@ -64,8 +64,8 @@
                 }
             }
             echo "<div class='buttons'>";
-            echo "<div class='prev'></div>";
-            echo "<div class='next'></div>";
+            echo "<div id='previous' class='prev'></div>";
+            echo "<div id='next' class='next'></div>";
             echo "</div>";
             echo "</div></div>";
         ?>
