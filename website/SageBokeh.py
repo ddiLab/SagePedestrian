@@ -123,7 +123,6 @@ def bokeh_double_scatter_plot(db_cursor):
     days = []
     xwalk_counts = []
     road_counts = []
-    
 
     db_cursor.execute(crosswalk_query)
     crosswalk_raw = db_cursor.fetchall()
@@ -139,7 +138,6 @@ def bokeh_double_scatter_plot(db_cursor):
         xwalk_counts.append(int(res[0]))
         days.append(res[1])
         last_date = current_date
-    
 
     db_cursor.execute(road_query)
     road_raw = db_cursor.fetchall()
@@ -154,18 +152,18 @@ def bokeh_double_scatter_plot(db_cursor):
         road_counts.append(int(res[0]))
         last_date = current_date
 
-    fig = figure(x_range = days, plot_width = 600, plot_height = 600)
+    fig = figure(x_range = days, y_range=Range1d(0, np.max(road_counts)+10, bounds="auto"), plot_width = 1024, plot_height = 600)
     fig.scatter(days, xwalk_counts, color="red", legend_label="Crosswalk")
     fig.scatter(days, road_counts, color="blue", legend_label="Road")
     fig.xaxis.major_label_orientation = pi/4 # puts dates in a / angle 
-    fig.yaxis.axis_label = "Number of Crosswalk Uses"
+    fig.yaxis.axis_label = "Uses"
     fig.xaxis.axis_label = "Day"
-    fig.title.text = "Crosswalk Usages Per Day"
+    fig.title.text = "Crosswalk Usages Per Day Scatterplot"
     fig.title.align = "center" # also does left and right
     #fig.title.text_color = "orange"
     fig.title.text_font_size = "25px"
     
-    #item_text = json.dumps(json_item(fig, "barGraph"))
+    print(json.dumps(json_item(fig, "scatterplot")))
     #item = JSON.parse(item_text);
     #Bokeh.embed.embed_item(item);
 

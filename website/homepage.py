@@ -4,6 +4,7 @@ import sys
 import json
 from SageBokeh import bokeh_heat_map
 from SageBokeh import bokeh_double_line_graph
+from SageBokeh import bokeh_double_scatter_plot
 import time
 
 sys.path.insert(0, '/home/wesley/')
@@ -186,6 +187,7 @@ def last24():
     print(json.dumps(path_dict)) #print the path dictionary so php can retrieve it
     bokeh_heat_map(db_cursor)
     bokeh_double_line_graph(db_cursor)
+    bokeh_double_scatter_plot(db_cursor)
 
     db_cursor.close()
     connection.close()
