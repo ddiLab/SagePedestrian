@@ -133,3 +133,6 @@ dmypy.json
 
 #ignore images folder
 website/images/debug_images/
+
+#ignore bash scripts
+*.sh
