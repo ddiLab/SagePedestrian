@@ -248,7 +248,7 @@ def bokeh_double_bar_graph(db_cursor):
     print(myDict)
     
     show(fig)
-    return;
+    return
 
 #This code needs some MAJOR refactoring
 def bokeh_heat_map(db_cursor):
@@ -337,6 +337,56 @@ def bokeh_heat_map(db_cursor):
     print(json.dumps(json_item(p, "heatmap")))
 
     return
+
+def bokeh_direction_scatter_plot(db_cursor):
+    east_query = "select count(distinct PERMAID), DATE_FORMAT(DATE, '%Y-%m-%d %a') as day from Contains where PERMAID in (select PERMAID from Person where EW=1 intersect select distinct PERMAID from Contains) group by day order by day;"
+    west_query = "select count(distinct PERMAID), DATE_FORMAT(DATE, '%Y-%m-%d %a') as day from Contains where PERMAID in (select PERMAID from Person where EW=0 intersect select distinct PERMAID from Contains) group by day order by day;"
+
+    days = []
+    east_counts = []
+    west_counts = []
+
+    db_cursor.execute(east_query)
+    raw = db_cursor.fetchall()
+
+    last_date = None
+    
+    for res in raw:
+        current_date = datetime.strptime(res[1], '%Y-%m-%d %a')
+        while last_date != None and (current_date - last_date).days > 1:
+            last_date = last_date + timedelta(days=1)
+            east_counts.append(0)
+            days.append(last_date.strftime('%Y-%m-%d %a'))
+        east_counts.append(int(res[0]))
+        days.append(res[1])
+        last_date = current_date
+
+    db_cursor.execute(west_query)
+    raw = db_cursor.fetchall()
+
+    last_date = None
+    
+    for res in raw:
+        current_date = datetime.strptime(res[1], '%Y-%m-%d %a')
+        while last_date != None and (current_date - last_date).days > 1:
+            last_date = last_date + timedelta(days=1)
+            west_counts.append(0) 
+        west_counts.append(int(res[0]))
+        last_date = current_date
+
+    TOOLS = "pan,box_zoom,reset,wheel_zoom"
+    fig = figure(x_range = days, y_range=Range1d(0, max(np.max(east_counts), np.max(west_counts))+10, bounds="auto"), plot_width = 1024, plot_height = 600, tools=TOOLS, toolbar_location="below")
+    fig.scatter(days, east_counts, color="red", legend_label="East")
+    fig.scatter(days, west_counts, color="blue", legend_label="West")
+    fig.xaxis.major_label_orientation = pi/4 # puts dates at a 45 degree angle 
+    fig.yaxis.axis_label = "People"
+    fig.xaxis.axis_label = "Day"
+    fig.title.text = "Total Number of People Going East or West Per Day"
+    fig.title.align = "center" # also does left and right
+    #fig.title.text_color = "orange"
+    fig.title.text_font_size = "25px"
+    
+    print(json.dumps(json_item(fig, "directionplot")))
     
 def main():
     connection = server_info.connect_to_database()

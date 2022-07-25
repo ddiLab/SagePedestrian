@@ -79,6 +79,10 @@ h1{
     display: flex;
     justify-content: center;
 }
+#directionplot {
+    display: flex;
+    justify-content: center;
+}
 .burger-style{
     display: none;
 }
@@ -179,6 +183,14 @@ h1{
     #doublelinegraph{
         width:110%;
         height:auto;
+    }
+    #scatterplot{
+        width: 110%;
+        height: auto;
+    }
+    #directionplot{
+        width: 110%;
+        height: auto;
     }
     hr{
         width:110%;

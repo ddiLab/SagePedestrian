@@ -88,12 +88,15 @@
                                                          var item = " . json_encode(($output[1])) . ";
                                                          var line = " . json_encode(($output[2])) . ";
                                                          var sctr = " . json_encode(($output[3])) . ";
+                                                         var drgh = " . json_encode(($output[4])) . ";
                                                          item = JSON.parse(item);
                                                          line = JSON.parse(line);
                                                          sctr = JSON.parse(sctr);
+                                                         drgh = JSON.parse(drgh);
                                                          Bokeh.embed.embed_item(item);
                                                          Bokeh.embed.embed_item(line);
                                                          Bokeh.embed.embed_item(sctr);
+                                                         Bokeh.embed.embed_item(drgh);
                     </script>";
                     echo "</div>";
                     echo "<script type='text/javascript' src='app.js'></script>";
@@ -112,6 +115,8 @@
         <div id="doublelinegraph" class="mybokehplot bk-root"></div>
         <br/>
         <div id="scatterplot" class="mybokehplot bk-root"></div>
+        <br/>
+        <div id="directionplot" class="mybokehplot bk-root"></div>
         <br/>
         <hr class="solid" style="position: relative; bottom: 1px; left: 0px;">
         <p class="botleft">This material is based upon work supported by the National Science Foundation under Grant No. OAC 1935984.</p>
