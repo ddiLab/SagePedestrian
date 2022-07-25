@@ -474,7 +474,7 @@ def color_the_person_box(img_original, assigned_number, person_pos, person_cords
     x,y = val[1], val[2]
     w,h = val[3] - val[1], val[4] - val[2]
     roi = img_original[y:y+h, x:x+w]
-    blur = cv2.GaussianBlur(roi, (7,7), 0) #ksize must be odd
+    blur = cv2.GaussianBlur(roi, (17,17), 0) #ksize must be odd
     img_original[y:y+h, x:x+w] = blur
 
     return img_original, dict_person_crossed_the_road, dict_person_use_the_crosswalk
@@ -676,6 +676,10 @@ def main(interval = -1, date = None, plot = False, initial=True):
                                                 50, 260), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)  
                             cv2.putText(img_new, "Person used crosswalk = "+ str(len(dict_person_use_the_crosswalk)), (
                                                 50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)   
+
+                            image_date = str(var_date_object).replace("00:00:00","")
+                            image_date = image_date + str(var_time_str)
+                            cv2.putText(img_new, str(image_date)  , (50,1730), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239),6)
 
                             # used for video writer
                             height, width, layers = img_new.shape
