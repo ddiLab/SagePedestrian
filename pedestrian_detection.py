@@ -470,6 +470,13 @@ def color_the_person_box(img_original, assigned_number, person_pos, person_cords
     else:
         cv2.rectangle(img_original,(val[1],val[2]),(val[3],val[4]),(255,255,255),3)#white
         
+    #blur the rectangle
+    x,y = val[1], val[2]
+    w,h = val[3] - val[1], val[4] - val[2]
+    roi = img_original[y:y+h, x:x+w]
+    blur = cv2.GaussianBlur(roi, (7,7), 0) #ksize must be odd
+    img_original[y:y+h, x:x+w] = blur
+
     return img_original, dict_person_crossed_the_road, dict_person_use_the_crosswalk
 
 #For standalone use: All functionality of pedestrian detection script should remain intact,
@@ -715,11 +722,11 @@ def main(interval = -1, date = None, plot = False, initial=True):
     c_file.close()
     """
 
+    plot = False
 
     #DATABASE PORTION BELOW
     #plot = True    # for db connection testing short periods of time
     if plot: #plot is set to true or false from plot_object_detection.py depending on the hour has changed or not
-        import sqlite3
         import server_info
         
         connection = server_info.connect_to_database()
