@@ -726,8 +726,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
     c_file.close()
     """
 
-    plot = False
-
     #DATABASE PORTION BELOW
     #plot = True    # for db connection testing short periods of time
     if plot: #plot is set to true or false from plot_object_detection.py depending on the hour has changed or not
