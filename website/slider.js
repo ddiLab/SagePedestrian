@@ -1,3 +1,5 @@
+var slider = 
+
 $(document).ready(function() {
     $("#slider").slider({
         min: 13,
@@ -9,7 +11,7 @@ $(document).ready(function() {
                 return false;
             } else {
                 for (var i = 0; i < ui.values.length; ++i) {
-                    $("input.sliderValue[data-index=" + i + "]").val(ui.values[i]);                   
+                    $("input.sliderValue[data-index=" + i + "]").val(ui.values[i]);          
                 }
             }
         }

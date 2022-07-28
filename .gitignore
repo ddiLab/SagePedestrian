@@ -136,3 +136,6 @@ website/images/debug_images/
 
 #ignore bash scripts
 *.sh
+
+#ignore jquery file
+jquery.ui.touch-punch.min.js

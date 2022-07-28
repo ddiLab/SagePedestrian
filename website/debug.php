@@ -42,7 +42,6 @@
         <?php
             $command = "python3 ./get_trajectory_images.py " . $_GET['id'];
             if(!is_numeric($_GET['id'])) { echo "Failure"; return; }    //must be a number
-            //echo "Command: " . $command;
             $output = null;
             $retval = null;
             exec($command,$output,$retval);

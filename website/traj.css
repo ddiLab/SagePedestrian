@@ -266,14 +266,6 @@ input[type=text]{
     .ui-datepicker-title {
         text-align: center;
     }
-    .ui-datepicker-next {
-        display: inline;
-        text-align: center;
-        cursor: pointer;
-        position: relative;
-        float:right;
-        color: black;
-    }
     .slider, .ui-slider-horizontal {
         width: 60%;
         height: 2.4px;

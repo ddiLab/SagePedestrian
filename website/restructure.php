@@ -7,7 +7,6 @@
         <title>Crosswalk Detection</title>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/Le-Frog/jquery-ui.css">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ==" crossorigin="" />
-        
         <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>    
         <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
         <script src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
@@ -79,6 +78,7 @@
                     <p style="width:100%;text-align:center;display:block;font-size:20px;">Choose Hour Range: </p>
                 </div>
                 <div style="width:100%;margin:auto;">
+                    <script src="jquery.ui.touch-punch.min.js"></script>
                     <script src='slider.js'></script>
                     <input type="text" class="sliderValue" data-index="0" value=13 id="timestart" name="timestart" style="width:15px;"/>
                     <div id="slider" class="slider"></div>
@@ -101,6 +101,8 @@
                 $timestop = $_GET["timestop"];
                 $timestart = $_GET["timestart"];
 
+                //check if valid date
+                if(!valid_date($user_date)) { echo "Failure"; return; }
                 //these should be numbers
                 if(!is_numeric($xwalk_opts)) { echo "Failure"; return; }
                 if(!is_numeric($timestop)) { echo "Failure"; return; }
@@ -157,6 +159,7 @@
     </body>
 </html>
 <?php
+function valid_date($date) { return date_parse($date); }
 
 function set_query($date, $xwalk_opts, $timestop, $timestart) {
     $return_query = "";

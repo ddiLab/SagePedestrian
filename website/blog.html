@@ -30,7 +30,7 @@
                     <a href="restructure.php" class="textdecor">Debug/Filter</a>
                 </li>
                 <li class="navlist3">
-                    <a href="blog.html" class="textdecor">The Process</a>
+                    <a href="blog.html" class="textdecor">Blog</a>
                 </li>
                 <li class="navlist3">
                     <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
@@ -62,14 +62,14 @@
                     <a href="https://ddilab.cs.niu.edu/author/michael-e.-papka/" > Michael E. Papka</a></h3>
                 <hr>
                 <h2>Step 1: Collecting Data</h2>
-                <p>The Crosswalk Detection Sage Project is possible through the use of the Northern Illinois University campus node
+                <p>&emsp;The Crosswalk Detection Sage Project is possible through the use of the Northern Illinois University campus node
                     that overlooks Normal Road. The camera inside of the node takes snapshots of the surrounding area every second and uploads them, allowing us 
                     to use machine learning to attain in-depth data that can be visualized by using graphs or tracing trajectories using libraries such as OpenCV.<br><br>
                     <img src="./images/Node.jpg" alt="Picture of the NIU node" style="display: block;margin-left: auto;margin-right: auto;width: 50%;">
                     <p style="display: block;margin-left: auto;margin-right: auto;width: 50%;">Figure 1: AoT node installed on a light pole at NIU campus</p>
                 </p>
                 <h2>Step 2: Creating the XML</h2>
-                <p>The next step is to detect every pedestrian along with their position in the image. 
+                <p>&emsp;The next step is to detect every pedestrian along with their position in the image. 
                     To do so, one approach could be to train a neural network-based pedestrian detection model that identifies 
                     and locates the pedestrian in the image. However, this process would require a lot of manual image tagging without getting 
                     any new results since several popular pre-trained models are already available that can do a fine job in person detection. 
@@ -83,7 +83,7 @@
                 </p>
                 <h2>Step 3: Parsing the XML</h2>
                 <p>
-                    Once each pedestrian's position is stored in the XML, the next part is to identify them in successive images to avoid their recounting. 
+                    &emsp;Once each pedestrian's position is stored in the XML, the next part is to identify them in successive images to avoid their recounting. 
                     In computer vision community, this task is called pedestrian re-identification (ReID) [7]. 
                     The idea behind ReID is to find a metrics or representation of a pedestrian in the image that is invariant of different angles, distance, zoom level, etc. 
                     Neural networks-based models try to learn local regions (shoes, glasses, hair color, etc.) 
@@ -92,7 +92,7 @@
                     In this study, we have leveraged a deep learning-based model deep-person-reid [7,8] to generate such features of each pedestrian detected in the frame to compare 
                     with the pedestrians from the following frames for re-identification. The model generates 1024-dimensional features for each pedestrian cropped in a rectangular box. 
                     The cosine similarity is calculated for feature vectors of one frame against successive frames. 
-                    <br> &emsp;&emsp; Pedestrians are considered same if they have high
+                    <br> &emsp; Pedestrians are considered same if they have high
                     cosine score, hence, assigned the same pedestrian id. In other cases where cosine similarity is below a pre-defined threshold, both pedestrians 
                     are assigned different ids. Low matching score may also happen where pedestrian is partially occluded by a car or another pedestrian in next frame, 
                     the similarity score gets very low. To mitigate this issue, the algorithm compared the current frame against last 6 consecutive frames to avoid 
@@ -103,7 +103,7 @@
                 </p>
                 <h2>Step 4: Counting and storing</h2>
                 <p>
-                    Now that a unique id is assigned to each distinct pedestrian (barring any errors), 
+                    &emsp;Now that a unique id is assigned to each distinct pedestrian (barring any errors), 
                     the next step in the pipeline is to count the number of pedestrians who have used (and not used) the crosswalk 
                     while crossing the street and storing the coordinates in a database. 
                     The output of this step will be two metrics for any given time period. First, the number of 
@@ -112,7 +112,7 @@
                     Subtracting the 2nd metric from 1st one will give the count of crosswalk violations. To compute these metrices, 
                     it is important to locate the street and crosswalk in the image. Fortunately, in this case, the camera is installed 
                     on a fixed lightpole which didn't shake or vibrate significantly due to wind or heavy vehicles. 
-                    Taking advantage of it, we pre-set the location of the crosswalk and street in the image. <br> &emsp;&emsp; 
+                    Taking advantage of it, we pre-set the location of the crosswalk and street in the image. <br> &emsp; 
                     While the crosswalk is represented in a form of convex polygon, 
                     both sides of the street are depicted by two parallel straight lines. 
                     These representations helped to determine the location of any pedestrian with respect to the crosswalk and the street. 
@@ -126,7 +126,7 @@
                     <img src="./images/singlecoord.jpg" alt="single coord" style="display: block;margin-left: auto;margin-right: auto;width: 50%;">
                     <p style="display: block;margin-left: auto;margin-right: auto;width: 50%;">
                         Figure 3: Our algorithm detects that the lady has crossed the street</p>
-                    Now that a pedestrian's position has been established, 
+                    &emsp;Now that a pedestrian's position has been established, 
                     we will briefly discuss about the simple rules to determine if a pedestrian has crossed the street
                     and if they have used the crosswalk or not. A pedestrian is considered to have crossed the street if 
                     they are detected on both sides of the street within a fixed time. To recall, the street has been
@@ -148,15 +148,15 @@
                         Figure 4: Determining the position of the points with respect to the straight line</p>
                 </p>
                 <h2>Step 5: Visuals</h2>
-                <p>Now that we know how the crosswalk usage is determined, and we have the coordinates of those who come in contact or go near the crosswalk, we are able
+                <p>&emsp;Now that we know how the crosswalk usage is determined, and we have the coordinates of those who come in contact or go near the crosswalk, we are able
                    display the data on graphs and images. With the use of OpenCV, and its polylines functions, we can directly input the list of a pedestrian's coordinates
                    into those functions and trace lines of where the pedestrian has walked. Along with OpenCV tracing the trajectories, we use Matplotlib and Pyplot to create
                    unique graphs that display overall trends of crosswalk detections, as well as day specific statistics on crosswalk usage. Observing Figure 5 below, we can come
                    to the conclusion that the crosswalk usage has drastically different statistics depending on what day of the week it is. 
                    The use of this allows us to more easily think about and picture the trends of different analyical views such as if weather is directly correlated to crosswalk usage or not.
                    <br><br>
-                   The homepage and filter page make use of the <a href="https://leafletjs.com/">Leaflet</a> library to make trajectories easily clickable for observing specific paths. 
-                   We also make use of the <a href="https://bokeh.org/">Bokeh Visualization library</a> to make interactive data charts to more easily examine the results from the database.
+                   &emsp;The homepage and filter page make use of the <a href="https://leafletjs.com/">Leaflet</a> library to make trajectories easily clickable for observing specific paths. 
+                   We also make use of the <a href="https://bokeh.org/">Bokeh Visualization library</a> to make interactive data charts to more easily visualze the results.
                    <br/>
                     <img src="./images/blogchart.png" alt="Line Chart" style="display: block;margin-left: auto;margin-right: auto;width: 50%;">
                     <p style="display: block;margin-left: auto;margin-right: auto;width: 50%;">
