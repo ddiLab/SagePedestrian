@@ -44,7 +44,7 @@
             if(!is_numeric($_GET['id'])) { echo "Failure"; return; }    //must be a number
             $output = null;
             $retval = null;
-            exec($command,$output,$retval);
+            exec($command,$output,$retval); //execute command to retrieve images from hartley sevrer
 
             if($output[0] == "None") echo "Failure";
 

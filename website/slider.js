@@ -1,8 +1,8 @@
 var slider = 
 
-$(document).ready(function() {
+$(document).ready(function() {  //slider for filter page
     $("#slider").slider({
-        min: 13,
+        min: 13,    //current hour range is between 13 and 22 hours
         max: 22,
         step: 1,
         values: [13, 22],//the widgets

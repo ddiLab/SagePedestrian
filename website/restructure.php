@@ -94,6 +94,7 @@
             <br><br><br><br><br><br><br><br><br>
         </div>
             <?php
+                //quit if initial page loading
                 if(!isset($_GET["date"])) return;
                 
                 $user_date = $_GET["date"];
@@ -109,6 +110,7 @@
                 if(!is_numeric($timestart)) { echo "Failure"; return; }
 
                 $paths = null;
+                //Check if date exists
                 if($_GET["date"] == null){//new structure because javascript messing with alert messages
                     echo '<script>alert("Please enter a valid date.");</script>';
                 }
@@ -123,14 +125,15 @@
                     if($output[0] == "No data available"){
                         echo '<script>alert("No data for this time range.");</script>';
                     }
-                    if(($user_date != null) && ($output[0] != "No data available")){
+                    if(($user_date != null) && ($output[0] != "No data available")){    //encode the leaflet map
                         echo "<div class='map_outer'><div id='map'></div><div>";
                         echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . ";</script>";
-                        echo "<script type='text/javascript' src='app.js'></script>";
+                        echo "<script type='text/javascript' src='app.js'></script>";   //load the trajectory points
                     }else{
                         $no_data = true;
                         echo '<p>Image not available</p>';
                     }
+                    //Trajectory graphs
                     echo '<div class="stats">';
                     echo '<h1>Trajectory Statistics</h1>';
                     echo '</div>';
@@ -159,27 +162,30 @@
     </body>
 </html>
 <?php
+//checks if date is valid
 function valid_date($date) { return date_parse($date); }
 
+//Sets the query to be process by backend python code
 function set_query($date, $xwalk_opts, $timestop, $timestart) {
     $return_query = "";
     $time_start = $date . " " . $timestart . ":00:00";//get all data
     $time_stop = $date . " " . $timestop . ":59:59";//get all data
     $opt = (int)$xwalk_opts;
+        //This can be optimized, don't need 4 cases for switch statement
         switch($opt) {
-            case 0://WORKING!
+            case 0://All options selected
                 $return_query = "SELECT PERMAID,XCOORD,YCOORD from Coordinate where DATE between '" . $time_start . "' and '" . $time_stop . "' order by PERMAID;";
                 break;
-            case 1://WORKING!
+            case 1://Neither road|crosswalk
                 $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=0 and USECROSSWALK=0 intersect select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') order by PERMAID;";
                 break;
-            case 2://WORKING!
+            case 2://Used road query
                 $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 and USECROSSWALK=0 intersect select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') order by PERMAID;";
                 break;
-            case 3://WORKING!
+            case 3://Use crosswalk query
                 $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 and USECROSSWALK=1 intersect select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') order by PERMAID;";
                 break;
-            case 4://WORKING!
+            case 4://Both
                 $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 intersect select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') order by PERMAID;";
                 break;
         }

@@ -70,8 +70,8 @@
         <br><br><br><br><br><br><br><br>
         
             <?php
-                $date = date('Y-m-d');
-                $date = date('Y-m-d',(strtotime ( '-1 day' , strtotime ( $date) ) ));
+                $date = date('Y-m-d');  //format the date
+                $date = date('Y-m-d',(strtotime ( '-1 day' , strtotime ( $date) ) ));   //subtract 1 from day
                 echo '<div class="image-caption">';
                 echo "<p class='caption'>The following trajectories are the crosswalk detections for $date between 8am - 5pm.</p>";
                 echo '</div>';
@@ -80,27 +80,35 @@
                 $output =null;
                 $retval =null;
                 exec($command,$output,$retval);
-                if($output[0] != "None") 
-                {
-                    echo '<div class="image-container">';
-                    echo "<div id='map' style='width:90%;'></div>";
-                    echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . ";
-                                                         var item = " . json_encode(($output[1])) . ";
-                                                         var line = " . json_encode(($output[2])) . ";
-                                                         var sctr = " . json_encode(($output[3])) . ";
-                                                         var drgh = " . json_encode(($output[4])) . ";
-                                                         item = JSON.parse(item);
-                                                         line = JSON.parse(line);
-                                                         sctr = JSON.parse(sctr);
-                                                         drgh = JSON.parse(drgh);
-                                                         Bokeh.embed.embed_item(item);
-                                                         Bokeh.embed.embed_item(line);
-                                                         Bokeh.embed.embed_item(sctr);
-                                                         Bokeh.embed.embed_item(drgh);
-                    </script>";
-                    echo "</div>";
-                    echo "<script type='text/javascript' src='app.js'></script>";
+                //Gets the output from the python command and places the JSON strings
+                //into appropriate div tags to create bokeh graphs
+                echo '<div class="image-container">';
+                echo "<div id='map' style='width:90%;'></div>";
+                //should convert this to a loop
+                //embed items into graph and leaflet map
+                if($output[0] != "{}")
+                    echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . ";</script>";
+                else {
+                    echo "<script type='text/javascript'>var traj = null; </script>";
+                    echo "<p class='caption'>Missing data for $date</p>";
                 }
+                echo "<script type='text/javascript'>
+                    var item = " . json_encode(($output[1])) . ";
+                    var line = " . json_encode(($output[2])) . ";
+                    var sctr = " . json_encode(($output[3])) . ";
+                    var drgh = " . json_encode(($output[4])) . ";
+                    console.log(item, line, sctr, drgh);
+                    item = JSON.parse(item);
+                    line = JSON.parse(line);
+                    sctr = JSON.parse(sctr);
+                    drgh = JSON.parse(drgh);
+                    Bokeh.embed.embed_item(item);
+                    Bokeh.embed.embed_item(line);
+                    Bokeh.embed.embed_item(sctr);
+                    Bokeh.embed.embed_item(drgh);
+                </script>";
+                echo "</div>";
+                echo "<script type='text/javascript' src='app.js'></script>";
             ?>
        
         <br><br>
