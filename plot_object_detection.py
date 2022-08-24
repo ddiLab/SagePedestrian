@@ -247,4 +247,4 @@ for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
     file_hour, file_date, processed = write_label_xmls(detection_model, image_path)
 # Runs pedestrian_detection.py with "plot" to True so it writes to DB
-pedestrian_detection.main(interval=-1, date=file_date, plot=True, initial=True)
+pedestrian_detection.main(interval=0, date=file_date, plot=True, initial=True)

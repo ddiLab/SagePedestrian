@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 import sys
 import math
 import subprocess
+import getopt
 from numpy.core.fromnumeric import var
 
 sys.path.insert(1, './deep-person-reid/')
@@ -523,26 +524,34 @@ def main(interval = -1, date = None, plot = False, initial=True):
     hour_max = 22
 
     # Allows user to run the script through command line arguments (.xml files must exist)
-    if len(sys.argv) < 2 and interval == -1:
-        print("\n \nFormat: python pedestrian_detection.py [hour_min] [hour_max] [date1, date2, ...]")
-        print("Where hour_min / hour_max = the hour range, dateN = yyyy/mm/dd ")
-        print("If times are not found, will run hours between 13 and 22.")
+    if len(sys.argv)-1 == 0 and interval == -1:
+        print("\n \nFormat: python pedestrian_detection.py -s [hour_min] -e [hour_max] -d [date1, date2, ...]")
+        print("     -s: Hour interval start")
+        print("     -e: Hour interval end")
+        print("     -d: List of dates that you want to run. Format: yyyy/mm/dd (Must go at end)")
+        print("     Default hours are 13 (8am) to 22 (5pm)")
         return
 
-    try:
-        if interval != -1 and date != None: #called from obj detection
-            hour_min = interval             #1 hour intervals
-            hour_max = interval
-            date_arr.append(date)
-        else:                               #standalone with params
-            hour_min = int(sys.argv[1])
-            hour_max = int(sys.argv[2])
-            for i in range(3, len(sys.argv)):
-                date_arr.append(sys.argv[i])
-    except: 
-        for i in range(1, len(sys.argv)):   #assuming date was entered
-            date_arr.append(sys.argv[i])
-        print("No times found, running default hour range")
+    if interval != -1 and date != None: #called from obj detection
+        hour_min = interval             #1 hour intervals
+        hour_max = interval
+        date_arr.append(date)
+    else:                               #standalone with params
+        opts, args = getopt.getopt(sys.argv[1:], "s:e:d:")
+        has_day = False
+
+        for opt, arg in opts:
+            if opt in ['-s']: hour_min = arg
+            elif opt in ['-e']: hour_max = arg
+            elif opt in ['-d']: 
+                has_day = True
+                date_arr.append(arg)
+                for date in args:   #append any extra days.
+                    date_arr.append(date)
+    
+    #sort day arr
+    #date_arr = sorted(date_arr)
+    #don't need to sort array here
 
     # Driver loop - based off of the days the user has entered as a CMD line argument
     for day in date_arr:
@@ -725,6 +734,8 @@ def main(interval = -1, date = None, plot = False, initial=True):
         writer.writerow([key, value])
     c_file.close()
     """
+
+    #plot = True
 
     #DATABASE PORTION BELOW
     #plot = True    # for db connection testing short periods of time
