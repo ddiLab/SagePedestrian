@@ -131,6 +131,7 @@
                         echo '<script>alert("No data for this time range.");</script>';
                     }
                     if(($user_date != null) && ($output[0] != "No data available")){    //encode the leaflet map
+                        echo "<br><br>";
                         echo "<div class='map_outer'><div id='map'></div><div>";
                         echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . ";</script>";
                         echo "<script type='text/javascript' src='app.js'></script>";   //load the trajectory points
