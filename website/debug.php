@@ -24,7 +24,7 @@
                     <a href="restructure.php" class="textdecor">Debug/Filter</a>
                 </li>
                 <li class="navlist">
-                    <a href="blog.html" class="textdecor">The Process</a>
+                    <a href="blog.html" class="textdecor">Blog</a>
                 </li>
                 <li class="navlist">
                     <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>

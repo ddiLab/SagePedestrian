@@ -248,31 +248,5 @@ input[type=text]{
     .mobilespacing{
         display:unset;
     }
-    .ui-datepicker table{
-        background-color: gray;
-    }
-    .ui-datepicker a {
-        text-decoration: none;
-    }
-    .ui-datepicker-header {
-        background-color: #8AA574;
-        color: black;
-        font-weight: bold;
-        line-height: 30px;
-        border-width: 1px 0 0 0;
-        border-style: solid;
-        border-color: #111;
-    }
-    .ui-datepicker-title {
-        text-align: center;
-    }
-    .slider, .ui-slider-horizontal {
-        width: 60%;
-        height: 2.4px;
-        cursor:pointer;
-        box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
-        background: #8AA574;
-        border-radius: 25px;
-        border: 0.2px solid #010101;
-    }
+    
 }

@@ -72,7 +72,7 @@ def bokeh_double_line_graph(db_cursor):
         #if date changes need to check for missing days
         while last_date != None and (current_date - last_date).days > 1:
             last_date = last_date + timedelta(days=1)
-            xwalk_counts.append(0)  #append 0s if necessary
+            xwalk_counts.append(-1)  #append -1s if no data
             days.append(last_date.strftime('%Y-%m-%d %a'))
         xwalk_counts.append(int(res[0]))
         days.append(res[1])
@@ -88,7 +88,7 @@ def bokeh_double_line_graph(db_cursor):
         current_date = datetime.strptime(res[1], '%Y-%m-%d %a')
         while last_date != None and (current_date - last_date).days > 1:
             last_date = last_date + timedelta(days=1)
-            road_counts.append(0) 
+            road_counts.append(-1) 
         road_counts.append(int(res[0]))
         last_date = current_date
 
@@ -128,7 +128,7 @@ def bokeh_double_scatter_plot(db_cursor):
         #if date changes, need to add 0s for each missing day
         while last_date != None and (current_date - last_date).days > 1:
             last_date = last_date + timedelta(days=1)
-            xwalk_counts.append(0)
+            xwalk_counts.append(-1)
             days.append(last_date.strftime('%Y-%m-%d %a'))
         #then append values normally
         xwalk_counts.append(int(res[0]))
@@ -145,7 +145,7 @@ def bokeh_double_scatter_plot(db_cursor):
         current_date = datetime.strptime(res[1], '%Y-%m-%d %a')
         while last_date != None and (current_date - last_date).days > 1:
             last_date = last_date + timedelta(days=1)
-            road_counts.append(0) 
+            road_counts.append(-1) 
         road_counts.append(int(res[0]))
         last_date = current_date
 
@@ -252,6 +252,8 @@ def bokeh_heat_map(db_cursor):
 
     readable_hours = ["8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm"] #list of readable hours
 
+    #NO_DATA_ARRAY = [float("nan")] * 10
+    NO_DATA_ARRAY = [-1] * 10
     #format results    
     counts = []
     sub_counts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #have a static list of counts for each day
@@ -282,7 +284,7 @@ def bokeh_heat_map(db_cursor):
             last_str_day = last_date.strftime('%Y-%m-%d %a')
             #if last_str_day not in day_range:
             day_range.append(last_str_day)
-            counts += [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            counts += NO_DATA_ARRAY
             hours += readable_hours
             sub_day += ([last_str_day] * length)
             days += sub_day
@@ -325,7 +327,8 @@ def bokeh_heat_map(db_cursor):
     p.grid.grid_line_color = None
     p.axis.axis_line_color = None
 
-    mapper = LinearColorMapper(palette=['#ffffe5','#fff7bc','#fee391','#fec44f','#fe9929','#ec7014','#cc4c02','#993404','#662506'], low=0, high=np.max(counts))
+    mapper = LinearColorMapper(palette=['#ffffe5','#fff7bc','#fee391','#fec44f','#fe9929','#ec7014','#cc4c02','#993404','#662506'], 
+                                low=0, high=np.max(counts), nan_color="gray", low_color = "gray")
     color_bar = ColorBar(title="Frequency", color_mapper=mapper, major_label_text_font_size="7px",
                      ticker=BasicTicker(desired_num_ticks=3),
                      formatter=PrintfTickFormatter(format="%d"),
@@ -356,7 +359,7 @@ def bokeh_direction_scatter_plot(db_cursor):
         current_date = datetime.strptime(res[1], '%Y-%m-%d %a')
         while last_date != None and (current_date - last_date).days > 1:
             last_date = last_date + timedelta(days=1)
-            east_counts.append(0)
+            east_counts.append(-1)
             days.append(last_date.strftime('%Y-%m-%d %a'))
         east_counts.append(int(res[0]))
         days.append(res[1])
@@ -372,7 +375,7 @@ def bokeh_direction_scatter_plot(db_cursor):
         current_date = datetime.strptime(res[1], '%Y-%m-%d %a')
         while last_date != None and (current_date - last_date).days > 1:
             last_date = last_date + timedelta(days=1)
-            west_counts.append(0) 
+            west_counts.append(-1) 
         west_counts.append(int(res[0]))
         last_date = current_date
 

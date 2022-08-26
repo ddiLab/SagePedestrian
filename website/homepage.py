@@ -12,24 +12,37 @@ sys.path.insert(0, '/home/wesley/')
 import server_info
 
 def last24():
-    #get yesterday's date
-    today = date.today()
-    non_string_yesterday = today - timedelta(days = 1)
-    yesterday = str(non_string_yesterday)
-    yesterday = yesterday.replace("/","-")
-    #query to get all coordinates from yesterday
-    query = "SELECT PERMAID, XCOORD, YCOORD FROM Coordinate WHERE DATE LIKE '" + yesterday + "%' order by PERMAID;"
-
     #connect to db
     connection = server_info.connect_to_database()
     db_cursor = connection.cursor()
+    #get most recent date
+    most_recent_day_query = "select max(DATE_FORMAT(DATE, '%Y-%m-%d')) from Contains"
+    db_cursor.execute(most_recent_day_query)
+    record = db_cursor.fetchall()
+    
+    if record is None or len(record) < 1: return
+
+    new_date = record[0][0]
+    #get yesterday's date
+    #today = date.today()
+    #non_string_yesterday = today - timedelta(days = 1)
+    #yesterday = str(non_string_yesterday)
+    #yesterday = yesterday.replace("/","-")
+    time_start = new_date + " 13:00:00"
+    time_stop = new_date + " 22:59:59"
+    #query to get all coordinates from yesterday
+    query = "SELECT PERMAID, XCOORD, YCOORD FROM Coordinate WHERE DATE between '" + time_start + "' and '" + time_stop + "' order by PERMAID;"
+
     db_cursor.execute(query)
 
     record = db_cursor.fetchall() # [0] = perma id, [1] = xcoord, [2] = ycoord
-    #print(record)
     total_coords = []
-
     path_dict = {}
+
+    #if the last 24 hours does not have any data:
+    #we want to use the day with the most recent data.
+    #if len(record) == 0 or record is None:
+
 
     #if len(record) < 1 or record is None:  #if record is empty
     #    print("None")
@@ -50,6 +63,7 @@ def last24():
                     path_dict[perma_id] = []
                 path_dict[perma_id].append(coordinate)
 
+    print(new_date)
     print(json.dumps(path_dict)) #print the path dictionary so php can retrieve it
     #create charts
     bokeh_heat_map(db_cursor)

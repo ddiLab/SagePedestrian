@@ -72,14 +72,13 @@
             <?php
                 $date = date('Y-m-d');  //format the date
                 $date = date('Y-m-d',(strtotime ( '-1 day' , strtotime ( $date) ) ));   //subtract 1 from day
-                echo '<div class="image-caption">';
-                echo "<p class='caption'>The following trajectories are the crosswalk detections for $date between 8am - 5pm.</p>";
-                echo '</div>';
-                echo '<br>';
+                //echo '<div class="image-caption">';
                 $command = "python3 ./homepage.py";
                 $output =null;
                 $retval =null;
                 exec($command,$output,$retval);
+                echo "<p class='caption'>The following trajectories are the crosswalk detections for $output[0] between 8am - 5pm.</p>";
+                echo '<br>';
                 //Gets the output from the python command and places the JSON strings
                 //into appropriate div tags to create bokeh graphs
                 echo '<div class="image-container">';
@@ -87,16 +86,17 @@
                 //should convert this to a loop
                 //embed items into graph and leaflet map
                 if($output[0] != "{}")
-                    echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . ";</script>";
+                    echo "<script type='text/javascript'>var traj = " . json_encode(($output[1])) . ";</script>";
                 else {
                     echo "<script type='text/javascript'>var traj = null; </script>";
-                    echo "<p class='caption'>Missing data for $date</p>";
+                    //echo "<p class='caption'>Missing data for $date</p>";
                 }
+                //this REALLY should be a loop. Please
                 echo "<script type='text/javascript'>
-                    var item = " . json_encode(($output[1])) . ";
-                    var line = " . json_encode(($output[2])) . ";
-                    var sctr = " . json_encode(($output[3])) . ";
-                    var drgh = " . json_encode(($output[4])) . ";
+                    var item = " . json_encode(($output[2])) . ";
+                    var line = " . json_encode(($output[3])) . ";
+                    var sctr = " . json_encode(($output[4])) . ";
+                    var drgh = " . json_encode(($output[5])) . ";
                     console.log(item, line, sctr, drgh);
                     item = JSON.parse(item);
                     line = JSON.parse(line);
