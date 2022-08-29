@@ -87,7 +87,7 @@ def main(query, date):
     no_data = False
 
     path_dict = {}
-
+    
     if len(record) < 1 or record is None:  #if record is empty
         print("No data available")
         no_data = True

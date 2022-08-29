@@ -96,7 +96,7 @@
             </div>
         </form>
         <div class="mobilespacing">
-            <br><br><br><br><br><br><br><br><br>
+            <br><br><br><br><br><br><br><br><br> <!-- why -->
         </div>
             <?php
                 //quit if initial page loading
@@ -176,25 +176,39 @@ function set_query($date, $xwalk_opts, $timestop, $timestart) {
     $return_query = "";
     $time_start = $date . " " . $timestart . ":00:00";//get all data
     $time_stop = $date . " " . $timestop . ":59:59";//get all data
+    //$query_base = "SELECT PERMAID,XCOORD,YCOORD from Coordinate "
+    //$time_string = "where DATE between '" . $time_start . "' and '" . $time_stop . "'";
     $opt = (int)$xwalk_opts;
-        //This can be optimized, don't need 4 cases for switch statement
-        switch($opt) {
-            case 0://All options selected
-                $return_query = "SELECT PERMAID,XCOORD,YCOORD from Coordinate where DATE between '" . $time_start . "' and '" . $time_stop . "' order by PERMAID;";
-                break;
-            case 1://Neither road|crosswalk
-                $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=0 and USECROSSWALK=0 intersect select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') order by PERMAID;";
-                break;
-            case 2://Used road query
-                $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 and USECROSSWALK=0 intersect select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') order by PERMAID;";
-                break;
-            case 3://Use crosswalk query
-                $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 and USECROSSWALK=1 intersect select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') order by PERMAID;";
-                break;
-            case 4://Both
-                $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in (select PERMAID from Person where USEROAD=1 intersect select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') order by PERMAID;";
-                break;
-        }
+    switch($opt) {
+        case 0://All options selected
+            $return_query = "SELECT PERMAID,XCOORD,YCOORD from Coordinate where DATE between
+                                '" . $time_start . "' and '" . $time_stop . "' order by PERMAID, DATE;";
+            break;
+        case 1://Neither road|crosswalk
+            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in 
+                                (select PERMAID from Person where USEROAD=0 and USECROSSWALK=0 intersect 
+                                    select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') 
+                                    order by PERMAID, DATE;";
+            break;
+        case 2://Used road query
+            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in 
+                                (select PERMAID from Person where USEROAD=1 and USECROSSWALK=0 intersect 
+                                    select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') 
+                                    order by PERMAID, DATE;";
+            break;
+        case 3://Use crosswalk query
+            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in 
+                                (select PERMAID from Person where USEROAD=1 and USECROSSWALK=1 intersect
+                                    select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "') 
+                                    order by PERMAID, DATE;";
+            break;
+        case 4://Both
+            $return_query = "SELECT PERMAID, XCOORD, YCOORD from Coordinate where PERMAID in 
+                                (select PERMAID from Person where USEROAD=1 intersect
+                                    select PERMAID from Contains where DATE between '" . $time_start . "' and '" . $time_stop . "')
+                                    order by PERMAID, DATE;";
+            break;
+    }
     return $return_query;
 }
 ?>

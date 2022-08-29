@@ -16,6 +16,7 @@
     text-align: center;
     margin: auto;
     border: 4px solid white;
+    z-index: -100;
 }
 
 .carousel .im img.showplease {
@@ -40,4 +41,111 @@
 .next:before {
     content: '>';
     right: 0;
+}
+.navbar-menu-mobile4{
+    display: none;
+}
+.burger-style4{
+    display: none;
+}
+.bar4{
+    display: none;
+}
+.navbar-name4{
+    font-size: 2rem;
+    text-decoration: none;
+    padding: 5px;
+    margin: 0;
+    color:black;
+}
+.navlist4{
+    list-style:none;
+    display: inline;
+    margin:1em;
+}
+.navbar4{
+    position: fixed;
+    left:0;
+    top:0;
+    background-color: white;
+    display: flex;
+    width: 100%;
+    height: 110px;
+    justify-content: space-evenly;
+    align-items: center;
+}
+@media only screen and (max-width: 1200px) {
+    .carousel .im img {
+        width: 50%;
+        position: absolute;
+        left: 25%;
+        top: 30%;
+        opacity: 0;
+        transition: opacity 0s;
+        text-align: center;
+        margin: auto;
+        border: 4px solid white;
+        z-index: -100;
+    }
+    .prev:before {
+        content: '<';
+        left: 0;
+        z-index: -100;
+    }
+    
+    .next:before {
+        content: '>';
+        right: 0;
+        z-index: -100;
+    }
+    .hideable{
+        display:none;
+    }
+    .burger-style4{
+        display: block;
+    }
+    .burger-style4.active .bar4:nth-child(2){
+        opacity: 0;
+    }
+    .burger-style4.active .bar4:nth-child(1){
+        transform: translateY(16px) rotate(45deg);
+    }
+    .burger-style4.active .bar4:nth-child(3){
+        transform: translateY(-6px) rotate(-45deg);
+    }
+    .navbar-menu-mobile4{
+        position: fixed;
+        left: 100%;
+        top: 110px;
+        gap: 10px;
+        background: #333;
+        width: 100%;
+        height: auto;
+        text-align: center;
+        transition: 0.3s;
+        display: block;
+        font-size: 50px;
+    }
+    .navbar-menu-mobile4.active{
+        background-color: rgba(51, 51, 51);
+        left: 0%;
+        width: 100%;
+        height: auto;
+        background: gray;
+        color: black;
+        top: 110px;
+        font-size: 40px;
+        z-index: 100;
+    }
+    .bar4{
+        display: block;
+        width: 50px;
+        height: 6px;
+        margin: 5px auto;
+        -webkit-transition: all 0.3s ease-in-out;
+        transition: all 0.3s ease-in-out;
+        background-color: #333;
+    }
+    
+
 }

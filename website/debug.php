@@ -10,8 +10,8 @@
         <script src="./carousel.js" ></script>
     </head> 
     <header>
-        <nav class="navbar">
-            <a href="index.php" class="navbar-name">
+        <nav class="navbar4">
+            <a href="index.php" class="navbar-name4">
                 <h1 style="font-weight: 800; font-family:'Open Sans', sans-serif; font-size: 42px; display:inline; color: #8AA574;">
                      Sage
                     <p style="border-top: 2px solid black; font-weight: 100; font-family:'Open Sans', sans-serif; font-size: 19px; color: black;">
@@ -19,23 +19,44 @@
                     </p>
                 </h1>
             </a>
-            <ul>
-                <li class="navlist">
-                    <a href="restructure.php" class="textdecor">Debug/Filter</a>
-                </li>
-                <li class="navlist">
-                    <a href="blog.html" class="textdecor">Blog</a>
-                </li>
-                <li class="navlist">
-                    <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
-                </li>
-                <li class="navlist">
-                    <a href="https://github.com/ddiLab/SagePedestrian" class="textdecor">Github</a>
-                </li>
-                <li class="navlist">
-                    <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
-                </li>
-            </ul>
+            <div class="hideable">
+                <ul>
+                    <li class="navlist4">
+                        <a href="restructure.php" class="textdecor">Debug/Filter</a>
+                    </li>
+                    <li class="navlist4">
+                        <a href="blog.html" class="textdecor">Blog</a>
+                    </li>
+                    <li class="navlist4">
+                        <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
+                    </li>
+                    <li class="navlist4">
+                        <a href="https://github.com/ddiLab/SagePedestrian" class="textdecor">Github</a>
+                    </li>
+                    <li class="navlist4">
+                        <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="navbar-menu-mobile4">
+                <br>
+                <a href="restructure.php" class="textdecor">Debug/Filter</a>
+                <br><br>
+                <a href="blog.html" class="textdecor">Blog</a>
+                <br><br>
+                <a href="https://ddilab.cs.niu.edu/" class="textdecor">NIU ddiLab</a>
+                <br><br>
+                <a href="https://github.com/ddiLab/SagePedestrian" class="textdecor">Github</a>
+                <br><br>
+                <a href="https://sagecontinuum.org/" class="textdecor">Sage</a>
+                <br><br>
+            </div>
+            <div class="burger-style4">
+                <span class="bar4"></span>
+                <span class="bar4"></span>
+                <span class="bar4"></span>
+            </div>
+            <script src="burger4.js"></script>
         </nav>
     </header>
     <body style="background-color: #8AA574">
@@ -44,7 +65,7 @@
             if(!is_numeric($_GET['id'])) { echo "Failure"; return; }    //must be a number
             $output = null;
             $retval = null;
-            exec($command,$output,$retval); //execute command to retrieve images from hartley sevrer
+            exec($command,$output,$retval); //execute command to retrieve images from hartley server
 
             if($output[0] == "None") echo "Failure";
 
