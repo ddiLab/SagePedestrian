@@ -16,7 +16,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging (1)]
 os.environ["CUDA_VISIBLE_DEVICES"]="0"	    # Use GPU
 import pathlib
 import tensorflow as tf
-from tensorflow.python.client import device_lib
 from datetime import datetime
 from pascal_voc_writer import Writer
 tf.get_logger().setLevel('ERROR')           # Suppress TensorFlow logging (2)
@@ -104,7 +103,6 @@ PATH_TO_LABELS = download_labels(LABEL_FILENAME)
 import time
 from object_detection.utils import label_map_util
 from object_detection.utils import config_util
-from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 
 PATH_TO_CFG = PATH_TO_MODEL_DIR + "/pipeline.config"
@@ -148,7 +146,6 @@ category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABE
 
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
@@ -227,24 +224,21 @@ def write_label_xmls(model, image_path):
 
         path_to_xml = xml_output_dir + os.path.basename(str(image_path)).replace("jpg","xml") # Get the xml files 
         writer.save(path_to_xml)
-        print("Done: ", os.path.basename(path_to_xml))
-        print("Hour: ", file_hour)
+        #print("Done: ", os.path.basename(path_to_xml))
+        #print("Hour: ", file_hour)
 
-        return var_time_object.hour, file_date, True    #return true if the file was processed
+        return file_date, True    #return true if the file was processed
 
-    return var_time_object.hour, file_date, False   #return false since the file was not processed
+    return file_date, False   #return false since the file was not processed
 
 if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
     os.mkdir(xml_output_dir)
 
-from subprocess import Popen
 import pedestrian_detection
-
-count = 0
 
 # For running pedestrian_detection.py
 for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
     xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
-    file_hour, file_date, processed = write_label_xmls(detection_model, image_path)
+    file_date, processed = write_label_xmls(detection_model, image_path)
 # Runs pedestrian_detection.py with "plot" to True so it writes to DB
 pedestrian_detection.main(interval=0, date=file_date, plot=True, initial=True)

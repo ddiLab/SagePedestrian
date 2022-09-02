@@ -2,13 +2,9 @@ import os
 import pathlib
 import cv2
 import numpy as np
-import operator
 from datetime import datetime
-from shutil import copyfile
 import xml.etree.ElementTree as ET
 import sys
-import math
-import subprocess
 import getopt
 from numpy.core.fromnumeric import var
 
@@ -21,22 +17,7 @@ from recordtype import recordtype
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 import sympy
-import pickle
-import time
-
-count = 0
-second_count = 0
-person_id=1
-total_person_count=0
-frame_id=0
-frame_counter = 0
-frame_queue = deque([],5) # Keeps track of previous 5 frames - useful for re-id
-person_pos = dict()
-dict_person_crossed_the_road = dict()
-dict_person_use_the_crosswalk = dict()
-dict_person_assigned_number_frames = dict()
-dict_frame_time_stamp = dict()
-max_person_count=0
+import math
 
 # CONTAINS MODEL - IF WANTING TO CHANGE MODELS CHANGE THE "model_name" variable
 extractor = FeatureExtractor(model_name='osnet_x1_0', model_path='./model.pth.tar', device='cuda')
@@ -116,7 +97,7 @@ def non_max_suppression_fast(boxes, overlapThresh):
 
 
 def get_total_person_count(current_frame_persons):
-    global dict_person_assigned_number_frames
+    #global dict_person_assigned_number_frames
     try:
         return max(dict_person_assigned_number_frames) #key=dict_person_assigned_number_frames.get)   
     except:
@@ -159,13 +140,18 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
     for current_id, current_person in enumerate(current_frame_persons):
         if current_person.person_id == max_person_id:
             within_range = True
+            found = False
+            #I will admit this is pretty bad
             for frame in frame_queue:
                 for person in frame.person_records:
                     if person.assigned_number == best_match_number:
-                        within_range = check_proximity(person.center_cords, current_person.center_cords)
+                        found = True
+                        within_range = is_in_range(person.center_cords, current_person.center_cords)
+                        break
+                if found: break
 #            print("Within range? ", within_range)
             if max_score > 0.6 and within_range:
-#                print(current_frame_persons[current_id].assigned_number, "CASE 2")
+#                print(current_frame_persons[current_id].assigned_number, "CASE 2")``
                 current_frame_persons[current_id].assigned_number = best_match_number
 #                print("Max score > 0.6, assigned number = ", best_match_number)
 #                print("Current frame sim score: ", current_frame_sim_score)
@@ -284,7 +270,7 @@ def assign_numbers_to_person(frame_queue, current_frame_persons, total_person_co
         return find_best_match_score(frame_queue, current_frame_persons, current_frame_sim_score, total_person_count)
 
 #Adds the person position and the frame they're located in to the dictionaries
-def update_person_position_and_frame(current_frame_persons,person_pos, current_frame_id ):
+def update_person_position_and_frame(current_frame_persons,person_pos, current_frame_id):
     #print("UPDATE PERSON POSITION AND FRAME")
     #print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     #global dict_person_assigned_number_frames
@@ -304,7 +290,7 @@ def update_person_position_and_frame(current_frame_persons,person_pos, current_f
     return person_pos
 
 
-def update_person_frame(current_frame_id,frame_queue,person_pos):
+def update_person_frame(current_frame_id,frame_queue,person_pos,dict_person_crossed_the_road,dict_person_use_the_crosswalk):
     #print("UPDATE PERSON FRAME")
     #print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     #global dict_person_assigned_number_frames
@@ -351,16 +337,13 @@ def middle_between_points(point1, point2):
     middle[1] = (point1[1] + point2[1]) // 2 #y coordinate
     return middle
 
-#Checks the proximity between 2 points within a set threshold
-def check_proximity(point1, point2):
-    y_thresh = 250
-    delta_y = point1[1] - point2[1]
-    if delta_y <= y_thresh or delta_y >= -y_thresh:
-        x_thresh = 500
-        delta_x = point1[0] - point2[0]
-        if delta_x <= x_thresh or delta_x >= -x_thresh:
-            return True
-    return False
+#finds the distance between 2 points
+def is_in_range(point1, point2):
+    MAX_DISTANCE = 650
+    x_part = math.pow(point2[0] - point1[0], 2)
+    y_part = math.pow(point2[1] - point1[1], 2)
+    distance = math.sqrt(x_part + y_part)
+    return distance < MAX_DISTANCE
         
 # GLOBAL VARIABLES TO FIND LINES ON THE ROAD
 # Slopes found using (y2-y1)/(x2-x1) - points found by looking at road, in standard form ax^2 + bx + c = 0
@@ -485,34 +468,21 @@ def color_the_person_box(img_original, assigned_number, person_pos, person_cords
 def main(interval = -1, date = None, plot = False, initial=True):
     image_list=[]  # Array the holds the new images created from this script 
     date_arr=[]    # Main for loop array
-    new_file_path = ""
 
-    # Made everything global because it needs to be imported in plot_object_detection so we can keep data across hours/whole day
-    global dict_person_assigned_number_frames, dict_person_crossed_the_road, dict_person_use_the_crosswalk, dict_frame_time_stamp
-    global count
-    global second_count
-    global person_id
-    global total_person_count
-    global frame_id
-    global frame_counter
-    global frame_queue
-    global person_pos
-    global max_person_count
+    global dict_person_assigned_number_frames,dict_person_crossed_the_road,dict_person_use_the_crosswalk,dict_frame_time_stamp
 
-    if initial:
-        count = 0
-        second_count = 0
-        person_id=1
-        total_person_count=0
-        frame_id=0
-        frame_counter = 0
-        frame_queue = deque([],6)              # Keeps track of previous 6 frames - used for re-id
-        person_pos = dict()                    # Dictionary to hold coordinates of people
-        dict_person_crossed_the_road = dict()  # Dictionary to check if the person has crossed the roads or not, person is key
-        dict_person_use_the_crosswalk = dict() # Dictionary to check if the person has crossed the crosswalk or not, person is key
-        dict_person_assigned_number_frames = dict() 
-        dict_frame_time_stamp = dict()
-        max_person_count=0
+    max_second_count = 5
+    second_count = 0
+    person_id=1
+    total_person_count=0
+    frame_id=0
+    frame_counter = 0
+    frame_queue = deque([],6)              # Keeps track of previous 6 frames - used for re-id
+    person_pos = dict()                    # Dictionary to hold coordinates of people
+    dict_person_crossed_the_road = dict()  # Dictionary to check if the person has crossed the roads or not, person is key
+    dict_person_use_the_crosswalk = dict() # Dictionary to check if the person has crossed the crosswalk or not, person is key
+    dict_person_assigned_number_frames = dict() 
+    dict_frame_time_stamp = dict()
 
     size = (0,0)    # Used in creating a .mp4 video at the end of the script
 
@@ -533,22 +503,22 @@ def main(interval = -1, date = None, plot = False, initial=True):
         return
 
     if interval != -1 and date != None: #called from obj detection
-        hour_min = interval             #1 hour intervals
-        hour_max = interval
+        #hour_min = 13                   #we are running the whole day through obj detection
+        #hour_max = 22
         date_arr.append(date)
     else:                               #standalone with params
         opts, args = getopt.getopt(sys.argv[1:], "s:e:d:")
         has_day = False
 
         for opt, arg in opts:
-            if opt in ['-s']: hour_min = arg
-            elif opt in ['-e']: hour_max = arg
+            if opt in ['-s']: hour_min = int(arg)
+            elif opt in ['-e']: hour_max = int(arg)
             elif opt in ['-d']: 
                 has_day = True
                 date_arr.append(arg)
                 for date in args:   #append any extra days.
                     date_arr.append(date)
-    
+
     #sort day arr
     #date_arr = sorted(date_arr)
     #don't need to sort array here
@@ -577,11 +547,9 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 formatted = "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year)
                 file_name = file_name.replace('.jpg','')
                 # Checking for valid hours we use
-                if hour_min <= var_time_object.hour and var_time_object.hour <= hour_max: 
-                    xml_file = "/raid/AoT/image_label_xmls/" + str(formatted) + "/"+file_name+".xml"
+                if hour_min <= var_time_object.hour <= hour_max: 
+                    xml_file = "/raid/AoT/image_label_xmls/" + formatted + "/"+file_name+".xml"
                     print(xml_file)
-                    if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections'): # adds crosswalk_detections directory
-                        os.mkdir('/raid/AoT/image_label_xmls/crosswalk_detections')
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str): # adds day to directory
                         os.mkdir('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str)
                     if os.path.exists(xml_file):
@@ -609,7 +577,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                                     # for increased accuracy can do Person[0] > 1900, ignores right half of screen which can cause massive re-id errors
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
-                                    print("Person: ", person , " - end person print")
+                                    #print("Person: ", person , " - end person print")
                                     img = img_original[person[1]:person[3], person[0]:person[2]]
             #                         print((person[1]-person[3]) * (person[0]-person[2]))
             #                         print("Index = ", count, "Image Shape = ",img.shape)
@@ -619,7 +587,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
             #                         print(np.average([person[0],person[2]]))
                                     #print("xml file",xml_file) # Debugging purposes
                                     person_rec.center_cords = [int(np.average([person[0],person[2]])), person[3]] # finds the center of the bounding box
-                                    print("center coords: ", person_rec.center_cords)
+                                    #print("center coords: ", person_rec.center_cords)
                                     person_rec.feature = extractor(img)
                                     #print("Printing person_rec.feature: ")
                                     #print(person_rec.feature)
@@ -643,7 +611,9 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             
                             person_pos = update_person_position_and_frame(current_frame_persons, person_pos, frame_rec.frame_id)
             #                 print(person_pos)
-                            frame_queue, person_pos = update_person_frame(frame_id,frame_queue, person_pos)
+                            frame_queue, person_pos = update_person_frame(frame_id,frame_queue, person_pos, 
+                                                                            dict_person_crossed_the_road,
+                                                                            dict_person_use_the_crosswalk)
                             total_person_count = get_total_person_count(current_frame_persons)
                             
                             for curr_person in current_frame_persons:
@@ -694,46 +664,19 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             height, width, layers = img_new.shape
                             size = (width,height)
                             image_list.append(img_new)
-                            new_file_path = file_name
                             # Saves file with writing to the path - ALL .JPGS NOW STORED IN CROSSWALK DETECTIONS
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
                             #print("\n\n") 
                         else:
                             second_count += 1
-                            max_second_count = 5
-                            frame_queue, person_pos =update_person_frame(frame_id,frame_queue,person_pos)
+                            frame_queue, person_pos =update_person_frame(frame_id,frame_queue, person_pos, 
+                                                                            dict_person_crossed_the_road,
+                                                                            dict_person_use_the_crosswalk)
                             if len(frame_queue) > 0 and second_count > max_second_count: #wait at least 5 seconds before popping
                                 frame_queue.popleft() #should remove old data from queue over large time gaps
             except Exception as e:
                 print("Exception thrown:", str(e))
                 continue
-
-    """
-    # Create .csv files - used for tracing trajectories or other analytical jobs
-    # create file with people and their coordinates
-    import csv
-    a_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_cords.csv", "w+")
-    writer = csv.writer(a_file)
-    for key, value in person_pos.items():
-        road = True if key in dict_person_crossed_the_road else False       #set road and crosswalk flags in the cords csv file
-        crosswalk = True if key in dict_person_use_the_crosswalk else False
-        writer.writerow([key, value, road, crosswalk])
-    a_file.close()
-
-    # Save assigned number of frames per person
-    b_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/person_frames.csv", "w+")
-    writer = csv.writer(b_file)
-    for key, value in dict_person_assigned_number_frames.items():
-        writer.writerow([key, value])
-    b_file.close()
-
-    # Save frame timestamps
-    c_file = open("/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/frame_timestamps.csv", "w+")
-    writer = csv.writer(c_file)
-    for key, value in dict_frame_time_stamp.items():
-        writer.writerow([key, value])
-    c_file.close()
-    """
 
     #plot = True
 
@@ -750,14 +693,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
             return
         
         cursor = connection.cursor(buffered = True, dictionary = True)
-
-        """
-        #Create connection to database - SQLITE3
-        db_path = "/raid/AoT/image_label_xmls/crosswalk_detections/pedestrian_detections.db"
-        db_connection = sqlite3.connect(db_path)
-        db_cursor = db_connection.cursor()
-        #check if current date exists within the database
-        """
         #most_recent_date = cursor.execute("select DATE from Frame ORDER BY DATE DESC LIMIT 1;")
         #date = str(most_recent_date.fetchone())
         #date = date + "+0000"
@@ -807,17 +742,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
         connection.commit()
         #close connection to database
         connection.close()
-
-        # Print still image of hourly crosswalk trajectories
-        #print("Tracing trajectories...")
-        #from plot_lines import draw_lines
-        #draw_lines(var_date_str) #TODO: Mirgrate to mariadb 
-
-        #create video of day/hour
-        #out = cv2.VideoWriter('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + '/crosswalk_detection.mp4',cv2.VideoWriter_fourcc(*'mp4v'),15,size)
-        #for i in range(len(image_list)):
-            #out.write(image_list[i])
-        #out.release()
 
 if __name__ == '__main__':
     main()
