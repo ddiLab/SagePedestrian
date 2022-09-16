@@ -83,12 +83,13 @@
                 //into appropriate div tags to create bokeh graphs
                 echo '<div class="image-container">';
                 echo "<div id='map' style='width:90%;'></div>";
+                echo "<script type='text/javascript' src='app.js'></script>";
                 //should convert this to a loop
                 //embed items into graph and leaflet map
                 if($output[0] != "{}")
-                    echo "<script type='text/javascript'>var traj = " . json_encode(($output[1])) . ";</script>";
+                    echo "<script type='text/javascript'>var traj = " . json_encode(($output[1])) . "; var alpha = .30; setUpMap();</script>";
                 else {
-                    echo "<script type='text/javascript'>var traj = null; </script>";
+                    echo "<script type='text/javascript'>var traj = null; setUpMap(); </script>";
                     //echo "<p class='caption'>Missing data for $date</p>";
                 }
                 //this REALLY should be a loop. Please
@@ -108,7 +109,6 @@
                     Bokeh.embed.embed_item(drgh);
                 </script>";
                 echo "</div>";
-                echo "<script type='text/javascript' src='app.js'></script>";
             ?>
        
         <br><br>

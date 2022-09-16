@@ -132,10 +132,10 @@
                     }
                     if(($user_date != null) && ($output[0] != "No data available")){    //encode the leaflet map
                         echo "<br><br>";
-                        echo "<div class='map_outer'><div id='map'></div><div>";
-                        echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . ";</script>";
                         echo "<script type='text/javascript' src='app.js'></script>";   //load the trajectory points
-                    }else{
+                        echo "<div class='map_outer'><div id='map'></div><div>";
+                        echo "<script type='text/javascript'>var traj = " . json_encode(($output[0])) . "; var alpha=.30; setUpMap();</script>";
+                    } else {
                         $no_data = true;
                         echo '<p>Image not available</p>';
                     }
@@ -181,6 +181,7 @@ function set_query($date, $xwalk_opts, $timestop, $timestart) {
     $opt = (int)$xwalk_opts;
     switch($opt) {
         case 0://All options selected
+            //SELECT PERMAID,XCOORD,YCOORD from Coordinate where DATE between '" . $time_start . "' and '" . $time_stop . "' order by PERMAID, DATE;
             $return_query = "SELECT PERMAID,XCOORD,YCOORD from Coordinate where DATE between
                                 '" . $time_start . "' and '" . $time_stop . "' order by PERMAID, DATE;";
             break;

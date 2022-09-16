@@ -20,6 +20,8 @@ def pi_chart_per_hour(db_cursor, date):
 
     data = np.array(hourly_xwalk_data, dtype=int)
 
+    if all(num == 0 for num in data): return
+
     pie_labels = ["8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm"]
 
     for i in range(len(pie_labels)):

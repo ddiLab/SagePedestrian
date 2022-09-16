@@ -328,7 +328,7 @@ def bokeh_heat_map(db_cursor):
     p.axis.axis_line_color = None
 
     mapper = LinearColorMapper(palette=['#ffffe5','#fff7bc','#fee391','#fec44f','#fe9929','#ec7014','#cc4c02','#993404','#662506'], 
-                                low=0, high=np.max(counts), nan_color="gray", low_color = "gray")
+                                low=0, high=np.max(counts), low_color = "gray")
     color_bar = ColorBar(title="Frequency", color_mapper=mapper, major_label_text_font_size="7px",
                      ticker=BasicTicker(desired_num_ticks=3),
                      formatter=PrintfTickFormatter(format="%d"),
