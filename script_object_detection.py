@@ -28,8 +28,12 @@ def main(date):
     tf.get_logger().setLevel('ERROR')           # Suppress TensorFlow logging (2)
 
     gpus = tf.config.experimental.list_physical_devices('GPU')
+    # Is allocating a set % of the gpu memory better than allowing growth?
+    # Does growth even work correctly? 
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
+
+    print("% memory of gpu used: ", gpu_options , "%")
 
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
@@ -40,6 +44,7 @@ def main(date):
     #                                                                          #
     ############################################################################
     IMAGE_PATHS = [] # list of raw images
+    MISSING_RAW_IMAGES = []
 
     # get the correct formatting of the raw image directories
     raw_year = date[6:10]
@@ -48,7 +53,15 @@ def main(date):
     raw_path = raw_year + "/" + raw_month + "/" + raw_day + "/"
 
     temp_image_dir = "/raid/AoT/sage/000048B02D15BC7D/bottom/" + raw_path # YYYY/MM/DD
-    xml_output_dir = "/raid/AoT/image_label_xmls/" + date # directory is created if it does not exist later MM-DD-YYYY
+    xml_output_dir = "/raid/AoT/image_label_xmls/" + date + "/" # directory is created if it does not exist later MM-DD-YYYY
+
+    if not os.path.isdir(temp_image_dir):
+        print("Raw image directory does not exist:", temp_image_dir, ", terminating program")
+        quit()
+
+    if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
+        os.mkdir(xml_output_dir)
+
 
     ############################################################################
     #                                                                          #
@@ -210,13 +223,15 @@ def main(date):
     #                                                                          #
     ############################################################################
 
-    if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
-        os.mkdir(xml_output_dir)
-
+   
     # Loop to create xmls
     for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
         xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
-        write_label_xmls(detection_model, image_path)
+        #print(xml_path)
+        if os.path.exists(xml_path): # do not create new files if they exist 
+            continue
+        else:
+            write_label_xmls(detection_model, image_path)
     
    
 if __name__=='__main__':
