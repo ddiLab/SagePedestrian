@@ -102,7 +102,7 @@ for day in filtered_formatted_dates_to_check:
         no_xmls.append(day)
 
 print("NO XMLS: ", no_xmls)
-#print("XMLS BUT NO IMGS: ", xmls_but_no_imgs)
+print("XMLS BUT NO IMGS: ", xmls_but_no_imgs)
 
 ############################################################################
 #                                                                          #
@@ -142,4 +142,5 @@ for day in xmls_but_no_imgs:
     pedestrian_date = pedestrian_year + "/" + pedestrian_month + "/" + pedestrian_day
 
     # Run pedestrian detection with the xmls_but_no_imgs list
-    pedestrian_detection.main(interval=-1, date=pedestrian_date, plot=True, initial=True)
+    pedestrian_detection.main(interval=0, date=pedestrian_date, plot=True, initial=True)
+
