@@ -1,7 +1,7 @@
 #!/home/users/justind/.conda/envs/tf_gpu/bin/
 #!/usr/bin/env python
 # coding: utf-8
-def main(date):
+def main(date,flag):
     
     ############################################################################
     #                                                                          #
@@ -55,7 +55,7 @@ def main(date):
 
     if not os.path.isdir(temp_image_dir):
         print("Raw image directory does not exist:", temp_image_dir, ", terminating program")
-        quit()
+        return
 
     if not os.path.isdir(xml_output_dir): # creation of xml output directory if it does not exist
         os.mkdir(xml_output_dir)
@@ -72,8 +72,8 @@ def main(date):
         for picture in os.listdir(temp_image_dir + filename):
             # print("Pic: ", picture)
             if os.path.getsize((os.path.join(temp_image_dir + filename, picture))) <= 0:
-                print("Corrupted file found, terminating program")
-                quit() 
+                print("Corrupted file found, terminating object detection for this day")
+                return 
             IMAGE_PATHS.append(os.path.join(temp_image_dir + filename, picture))
 
     # Download the model
@@ -226,9 +226,12 @@ def main(date):
     for image_path in IMAGE_PATHS:# add the .xml files into the correct directories
         xml_path = xml_output_dir + os.path.basename(str(image_path)).replace("jpg", "xml")
         #print(xml_path)
-        if os.path.exists(xml_path): # do not create new files if they exist 
-            continue
-        else:
+        if flag == 0: # flag passed in from missing days -x that will NOT overwrite xmls
+            if os.path.exists(xml_path): # do not create new files if they exist 
+                continue
+            else:
+                write_label_xmls(detection_model, image_path)
+        else: # flag is 1 meaning missing days -x WILL overwrite xmls
             write_label_xmls(detection_model, image_path)
     
    
