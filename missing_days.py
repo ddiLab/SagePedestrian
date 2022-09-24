@@ -5,142 +5,187 @@ IT CHECKS FOR MISSING DAYS FOR THE SAGE CROSSWALK DETECTION PROJECT BY LOOKING A
 IMAGE_LABEL_XMLS DIRECTORY TO SEE IF XMLS EXIST FOR THE DAY, IF THEY DO IT FURTHER CHECKS
 TO SEE IF THERE ARE IMAGES IN THE IMAGE_LABEL_XMLS/CROSSWALK_DETECTIONS DIRECTORY
 '''
-
-############################################################################
-#                                                                          #
-#                                                                          #
-#   First step: find all of the days of the week based on the current day  #
-#                                                                          #
-#                                                                          #
-############################################################################
-import datetime
+''' !!!AS OF 9/24/2022 THIS SCRIPT HAS A GET OPT THAT WILL GO BACK TO JANUARY 2022 AND RERUN ALL OF THE DAYS!!! '''
+# ENTER -x FOR RUNNING THE OBJECT DETECTION SCRIPT FROM JAN FIRST
 
 
-today = datetime.date.today()    # get the current date: YYYY-MM-DD
-weekday_num = today.isoweekday() # get the week day based on current day (1-7 (Sun = 7))
-print("Today: ", today, " | Day: ", weekday_num, "/7")
+def main():
+    ############################################################################
+    #                                                                          #
+    #                                                                          #
+    #   First step: find all of the days of the week based on the current day  #
+    #                                                                          #
+    #                                                                          #
+    ############################################################################
+    import datetime
+    import getopt
+    import sys
 
-'''
-THANKS TO THIS STACK OVERFLOW LINK https://stackoverflow.com/questions/56163008/how-to-get-all-dates-of-week-based-on-week-number-in-python
-FOR PROVIDING A SIMPLE EASY WAY TO GET ALL THE DAYS OF THE WEEK
-'''
+    today = datetime.date.today()    # get the current date: YYYY-MM-DD
+    weekday_num = today.isoweekday() # get the week day based on current day (1-7 (Sun = 7))
+    print("Today: ", today, " | Day: ", weekday_num, "/7")
 
-start_of_week = today - datetime.timedelta(days=weekday_num) # get the first day of the week
+    '''
+    THANKS TO THIS STACK OVERFLOW LINK https://stackoverflow.com/questions/56163008/how-to-get-all-dates-of-week-based-on-week-number-in-python
+    FOR PROVIDING A SIMPLE EASY WAY TO GET ALL THE DAYS OF THE WEEK
+    '''
 
-days_to_check = []               # array that we will be checking for xml/image existences
+    start_of_week = today - datetime.timedelta(days=weekday_num) # get the first day of the week
 
-# get all of the days of the week for the current week 
-for i in range(7):       
-    days_to_check.append(start_of_week + datetime.timedelta(days=i))
+    days_to_check = []               # array that we will be checking for xml/image existences
 
-days_to_check = [str(d) for d in days_to_check] # convert the days from dates to strings
+    # get all of the days of the week for the current week 
+    for i in range(7):       
+        days_to_check.append(start_of_week + datetime.timedelta(days=i))
 
-print("Dates in week: ", days_to_check)
+    days_to_check = [str(d) for d in days_to_check] # convert the days from dates to strings
 
-# FORMAT OF DAYS TO CHECK AT THIS POINT = ['YYYY-MM-DD',...]
+    #print("Dates in week: ", days_to_check)
 
-############################################################################
-#                                                                          #
-#   Second step: Filter the string array of dates by checking to see       #
-#                which ones have no images found in                        #
-#                /raid/AoT/image_label_xmls/crosswalk_detections/          #
-#                                                                          #
-############################################################################
+    # FORMAT OF DAYS TO CHECK AT THIS POINT = ['YYYY-MM-DD',...]
 
-filtered_dates_to_check = [] # Keeps track of the dates that have NO data from pedestrian detection in crosswalk_detections/
+    ############################################################################
+    #                                                                          #
+    #   Second step: Filter the string array of dates by checking to see       #
+    #                which ones have no images found in                        #
+    #                /raid/AoT/image_label_xmls/crosswalk_detections/          #
+    #                                                                          #
+    ############################################################################
 
-# crosswalk detection directory name format: YYYY-MM-DD
+    filtered_dates_to_check = [] # Keeps track of the dates that have NO data from pedestrian detection in crosswalk_detections/
 
-import os
+    # crosswalk detection directory name format: YYYY-MM-DD
 
-for day in days_to_check:
-    path_to_pd_imgs = "/raid/AoT/image_label_xmls/crosswalk_detections/" + day # get path to particular day
-    dir_exists = os.path.isdir(path_to_pd_imgs)                                # check to see if the directory for that day exists
-    #print("Day: " + day, " |", " DIR: ", dir_exists)
-    if dir_exists == False:
-        filtered_dates_to_check.append(day) # append the days that do not have images to the array we need to re-run
+    import os
 
-#print(filtered_dates_to_check)
+    for day in days_to_check:
+        path_to_pd_imgs = "/raid/AoT/image_label_xmls/crosswalk_detections/" + day # get path to particular day
+        dir_exists = os.path.isdir(path_to_pd_imgs)                                # check to see if the directory for that day exists
+        #print("Day: " + day, " |", " DIR: ", dir_exists)
+        if dir_exists == False:
+            filtered_dates_to_check.append(day) # append the days that do not have images to the array we need to re-run
 
-############################################################################
-#                                                                          #
-#   Third step: Now that we have the days with no images, we need to see   #
-#               if the xmls exist for that day in /image_label_xmls        #
-#                                                                          #
-############################################################################
+    #print(filtered_dates_to_check)
 
-xmls_but_no_imgs = [] # array that stores list of days with no images but xmls do exist
-no_xmls = []          # array that stores list of days with no xmls (thus no images)
+    ############################################################################
+    #                                                                          #
+    #   Third step: Now that we have the days with no images, we need to see   #
+    #               if the xmls exist for that day in /image_label_xmls        #
+    #                                                                          #
+    ############################################################################
 
-# the file format for image_label_xmls is different than crosswalk_detections
-# need to get MM-DD-YYYY format instead
+    xmls_but_no_imgs = [] # array that stores list of days with no images but xmls do exist
+    no_xmls = []          # array that stores list of days with no xmls (thus no images)
 
-temp_array = filtered_dates_to_check
-filtered_formatted_dates_to_check = [] # python is dumb and wont append a cleared array so i made this for now
+    # the file format for image_label_xmls is different than crosswalk_detections
+    # need to get MM-DD-YYYY format instead
 
-for day in temp_array:
-    year = day[0:4]
-    month = day[5:7]
-    new_day = day[8:10]
-    new_date_format = month + "-" + new_day + "-" + year
-    filtered_formatted_dates_to_check.append(new_date_format)
+    temp_array = filtered_dates_to_check
+    filtered_formatted_dates_to_check = [] # python is dumb and wont append a cleared array so i made this for now
 
-for day in filtered_formatted_dates_to_check:
-    path_to_xmls = "/raid/AoT/image_label_xmls/" + day
-    dir_exists = os.path.isdir(path_to_xmls)  # check to see if the directory exists
-    #print("Day: " + day, " | ", "Dir Exists: ", dir_exists)
-    if dir_exists == True:                    # if it does, check to see if there is 30k-36k xmls
-        file_count = 0                        # counter to see how many files are in the directory (dont rerun day if > 30k)
-        for path in os.listdir(path_to_xmls): 
-            file_count = file_count + 1       # get file count
-        #print("     File Count: ", file_count)
-        if file_count > 30000:
-            xmls_but_no_imgs.append(day)
+    for day in temp_array:
+        year = day[0:4]
+        month = day[5:7]
+        new_day = day[8:10]
+        new_date_format = month + "-" + new_day + "-" + year
+        filtered_formatted_dates_to_check.append(new_date_format)
+
+    for day in filtered_formatted_dates_to_check:
+        path_to_xmls = "/raid/AoT/image_label_xmls/" + day
+        dir_exists = os.path.isdir(path_to_xmls)  # check to see if the directory exists
+        #print("Day: " + day, " | ", "Dir Exists: ", dir_exists)
+        if dir_exists == True:                    # if it does, check to see if there is 30k-36k xmls
+            file_count = 0                        # counter to see how many files are in the directory (dont rerun day if > 30k)
+            for path in os.listdir(path_to_xmls): 
+                file_count = file_count + 1       # get file count
+            #print("     File Count: ", file_count)
+            if file_count > 30000:
+                xmls_but_no_imgs.append(day)
+            else:
+                no_xmls.append(day)
         else:
             no_xmls.append(day)
+
+    #print("NO XMLS: ", no_xmls)
+    #print("XMLS BUT NO IMGS: ", xmls_but_no_imgs)
+
+    ############################################################################
+    #                                                                          #
+    #                               Fourth step:                               #
+    #                                                                          #
+    #   Now we have two lists that determine if:                               #
+    #       1)xmls exist but images dont  - xmls_but_no_imgs                   #
+    #       2)no xmls exist (thus no images)  - no_xmls                        #
+    #                                                                          #
+    #   The goal for this step is to get these combined into one array         #
+    #   that will only be xmls exist but images dont - xmls_but_no_imgs        #
+    #                                                                          #
+    #   To achieve that we will do object detection for those days             #
+    #                                                                          #
+    ############################################################################
+
+    # NOTE: IMPORTANT: 
+    # !!! THIS SCRIPT RUNS ON SUNDAY BUT RUNS LAST WEEKS SUNDAY !!!
+    # FOR EXAMPLE: TODAY IS SUNDAY 9/11/2022, BUT WHEN RUN, THE SUNDAY FOR THAT WEEK IS 9/4/2022
+    
+    
+
+    opts = getopt.getopt(sys.argv[1], "x") # allows -x
+    flag = 0
+    if sys.argv[1] == "-x":
+        flag = 1
     else:
-        no_xmls.append(day)
-
-print("NO XMLS: ", no_xmls)
-print("XMLS BUT NO IMGS: ", xmls_but_no_imgs)
-
-############################################################################
-#                                                                          #
-#                               Fourth step:                               #
-#                                                                          #
-#   Now we have two lists that determine if:                               #
-#       1)xmls exist but images dont  - xmls_but_no_imgs                   #
-#       2)no xmls exist (thus no images)  - no_xmls                        #
-#                                                                          #
-#   The goal for this step is to get these combined into one array         #
-#   that will only be xmls exist but images dont - xmls_but_no_imgs        #
-#                                                                          #
-#   To achieve that we will do object detection for those days             #
-#                                                                          #
-############################################################################
-
-# NOTE: IMPORTANT: 
-# !!! THIS SCRIPT RUNS ON SUNDAY BUT RUNS LAST WEEKS SUNDAY !!!
-# FOR EXAMPLE: TODAY IS SUNDAY 9/11/2022, BUT WHEN RUN, THE SUNDAY FOR THAT WEEK IS 9/4/2022
-
-import script_object_detection
-
-for day in no_xmls:
-    print("Running object detection for: " + day)
-    script_object_detection.main(day)  # xmls created for missing day
-    xmls_but_no_imgs.append(day)       # add this to the xml but no images (ready for pedestrian detection)
-    print("Finished object detection for: " + day)
+        flag = 0 # already 0 if this evaulate to true
 
 
-import pedestrian_detection
+    if flag == 1: # user has added a -x to the missing days script which means it will run from jan 1st to current day
+        days_to_run = []
+        from datetime import date, timedelta
+        
+        ##########################################################################################
+        start_date = date(2022, 1, 1) # change these dates to get the date range you want to run #
+        end_date = date(2022, 5, 31)                                                             #
+        ##########################################################################################
+        delta = end_date - start_date   # returns timedelta
 
-for day in xmls_but_no_imgs:
-    # need to get correct date formatting for pedestrian detection call (have MM-DD-YYYY, need YYYY/MM/DD)
-    pedestrian_day = day[3:5]
-    pedestrian_month = day[0:2]
-    pedestrian_year = day[6:10]
-    pedestrian_date = pedestrian_year + "/" + pedestrian_month + "/" + pedestrian_day
+        for i in range(delta.days + 1):
+            day = start_date + timedelta(days=i)
+            temp = str(day)
+            y = temp[0:4]
+            m = temp[5:7]
+            d = temp[8:10]
+            new_date_format = m + "-" + d + "-" + y # good
+            days_to_run.append(new_date_format)
 
-    # Run pedestrian detection with the xmls_but_no_imgs list
-    pedestrian_detection.main(interval=0, date=pedestrian_date, plot=True, initial=True)
+        import script_object_detection
+        import pedestrian_detection
+        for day in days_to_run:
+            script_object_detection.main(day,1) # 1 passed in means it will overwrite the bad xmls
+            y = day[6:10]
+            m = day[0:3]
+            d = day[3:5]
+            formatted_date = y + "/" + m + "/" + d
+            pedestrian_detection.main(interval=0, date=formatted_date, plot=True, initial=True)
 
+    else:
+        import script_object_detection
+        for day in no_xmls:
+            print("Running object detection for: " + day)
+            script_object_detection.main(day,0)  # xmls created for missing day
+            xmls_but_no_imgs.append(day)       # add this to the xml but no images (ready for pedestrian detection)
+            print("Finished object detection for: " + day)
+
+        import pedestrian_detection
+        for day in xmls_but_no_imgs:
+            # need to get correct date formatting for pedestrian detection call (have MM-DD-YYYY, need YYYY/MM/DD)
+            pedestrian_day = day[3:5]
+            pedestrian_month = day[0:2]
+            pedestrian_year = day[6:10]
+            pedestrian_date = pedestrian_year + "/" + pedestrian_month + "/" + pedestrian_day
+
+            # Run pedestrian detection with the xmls_but_no_imgs list
+            pedestrian_detection.main(interval=0, date=pedestrian_date, plot=True, initial=True)
+
+
+if __name__=='__main__':
+    main()
