@@ -6,7 +6,6 @@ from datetime import datetime
 import xml.etree.ElementTree as ET
 import sys
 import getopt
-from numpy.core.fromnumeric import var
 
 sys.path.insert(1, './deep-person-reid/')
 import torch
@@ -21,6 +20,14 @@ import math
 
 # CONTAINS MODEL - IF WANTING TO CHANGE MODELS CHANGE THE "model_name" variable
 extractor = FeatureExtractor(model_name='osnet_x1_0', model_path='./model.pth.tar', device='cuda')
+
+def load_crosswalk_corrdinates():
+    import json
+    with open('./crosswalk_coordinates.json') as xwalk:
+        contents = xwalk.read()
+        coordinates = json.loads(contents)
+        return np.array(coordinates)
+    return np.array([[0,0], [0,0], [0,0], [0,0]])   #default
 
 # Gets the crosswalk coordinates (the coordinates are slightly bigger than the exact coordinates from corner to corner)
 def get_crosswalk_coordinates():
@@ -300,36 +307,30 @@ def update_person_frame(current_frame_id,frame_queue,person_pos,dict_person_cros
             if current_frame_id - arr[0] > 0:
                 #print(current_frame_id, arr,assigned_number )
                 #print("CASE 1")
-                del dict_person_assigned_number_frames[assigned_number]
-                if assigned_number in dict_person_crossed_the_road:
-                    del dict_person_crossed_the_road[assigned_number]
-                if assigned_number in dict_person_use_the_crosswalk:
-                    del dict_person_use_the_crosswalk[assigned_number]
-                if assigned_number in person_pos:
-                    del person_pos[assigned_number]
-                for frame_id, previous_frame in enumerate(frame_queue):
-                    for person_id, previous_person in enumerate(previous_frame.person_records):
-                        if previous_person.assigned_number == assigned_number:
-                            del frame_queue[frame_id].person_records[person_id]               
-                    
+                delete_assigned_numbers_in_dicts(assigned_number, frame_queue, person_pos,
+                                                 dict_person_crossed_the_road, dict_person_use_the_crosswalk)
         elif len(arr) == 2:
-            if arr[1]-arr[0] > 1:
+            if arr[1] - arr[0] > 1:
                 #print("CASE 2")
-                del dict_person_assigned_number_frames[assigned_number]
-                if assigned_number in dict_person_crossed_the_road:
-                    del dict_person_crossed_the_road[assigned_number]
-                if assigned_number in dict_person_use_the_crosswalk:
-                    del dict_person_use_the_crosswalk[assigned_number]
-                if assigned_number in person_pos:
-                    del person_pos[assigned_number]
-                for frame_id, previous_frame in enumerate(frame_queue):
-                    for person_id, previous_person in enumerate(previous_frame.person_records):
-                        if previous_person.assigned_number == assigned_number:
-                            del frame_queue[frame_id].person_records[person_id]            
+                delete_assigned_numbers_in_dicts(assigned_number, frame_queue, person_pos, 
+                                                 dict_person_crossed_the_road, dict_person_use_the_crosswalk)         
     # print(dict_person_assigned_number_frames)
     # print("Queue Length", len(frame_queue))
     # print("Frame Queue: " + str(frame_queue) + ", Person Pos: " + str(person_pos))
     return frame_queue,person_pos
+
+def delete_assigned_numbers_in_dicts(assigned_number,frame_queue,person_pos,dict_person_crossed_the_road,dict_person_use_the_crosswalk):
+    del dict_person_assigned_number_frames[assigned_number]
+    if assigned_number in dict_person_crossed_the_road:
+        del dict_person_crossed_the_road[assigned_number]
+    if assigned_number in dict_person_use_the_crosswalk:
+        del dict_person_use_the_crosswalk[assigned_number]
+    if assigned_number in person_pos:
+        del person_pos[assigned_number]
+    for frame_id, previous_frame in enumerate(frame_queue):
+        for person_id, previous_person in enumerate(previous_frame.person_records):
+            if previous_person.assigned_number == assigned_number:
+                del frame_queue[frame_id].person_records[person_id]   
 
 def middle_between_points(point1, point2):
     middle = [None] * 2
@@ -337,7 +338,7 @@ def middle_between_points(point1, point2):
     middle[1] = (point1[1] + point2[1]) // 2 #y coordinate
     return middle
 
-#finds the distance between 2 points
+#checks if point1 and point2 are close to each other within a certain threshold
 def is_in_range(point1, point2):
     MAX_DISTANCE = 650
     x_part = math.pow(point2[0] - point1[0], 2)
@@ -361,7 +362,7 @@ def did_person_cross_the_road(assigned_number, person_pos):
     #values for each side of the road, change these for new images
 
     #get crosswalk coords
-    crosswalk_coords = get_crosswalk_coordinates()
+    crosswalk_coords = xwalk_coords
     center_top = middle_between_points(crosswalk_coords[0], crosswalk_coords[1])
     center_bottom = middle_between_points(crosswalk_coords[2], crosswalk_coords[3])
 
@@ -379,7 +380,7 @@ def did_person_cross_the_road(assigned_number, person_pos):
     if len(arr) > 1:
         distance_covered = float(Point(arr[0]).distance(Point(arr[-1])))
         total_distance = float(Point(center_top).distance(Point(center_bottom)))
-        pct = distance_covered/ total_distance
+        pct = distance_covered / total_distance
         #print ("assigned_number = ", assigned_number, "distance_covered = ", distance_covered, "total_distance = ",
               #total_distance, "pct = ", pct, "cords = ", arr[0], arr[-1])
         if (north_side and south_side) or (north_side and pct>0.8) or (south_side and pct>0.8):
@@ -390,10 +391,10 @@ def angle_between_crosswalk_and_trajectory(person_pos):
     #print("ANGLE BETWEEN CROSSWALK AND TRAJECTORY")
     #print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     import math
-    from sympy import Point, Line, pi
+    #from sympy import Point, Line, pi
 
     #get crosswalk coords
-    crosswalk_coords = get_crosswalk_coordinates()
+    crosswalk_coords = xwalk_coords
     #get center of top of crosswalk
     center_top = middle_between_points(crosswalk_coords[0], crosswalk_coords[1])
     #get center of bottom
@@ -418,7 +419,7 @@ def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
     #print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     count=0
     # using the crosswalk coordinates
-    crosswalk_polygon = Polygon([(524,802),(667,790),(1023,941),(758,962)])
+    crosswalk_polygon = Polygon(xwalk_coords)
     #print("Pratool person cords",person_cords)
     for cords in person_cords:
         if crosswalk_polygon.contains(Point(cords)):
@@ -470,6 +471,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
     date_arr=[]    # Main for loop array
 
     global dict_person_assigned_number_frames,dict_person_crossed_the_road,dict_person_use_the_crosswalk,dict_frame_time_stamp
+    global xwalk_coords
 
     max_second_count = 5
     second_count = 0
@@ -488,10 +490,12 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
     frame_record = recordtype("frame_record", "frame_id person_records")
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
-    pts = get_highlightable_coordinates()# Uses exact crosswalk coordinates as a highlighter for visual aid
+    xwalk_coords = load_crosswalk_corrdinates()
+    pts = xwalk_coords# Uses exact crosswalk coordinates as a highlighter for visual aid
 
     hour_min = 13   #default hour range
     hour_max = 22
+    emptyImage = False
 
     # Allows user to run the script through command line arguments (.xml files must exist)
     if len(sys.argv)-1 == 0 and interval == -1:
@@ -519,10 +523,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 for date in args:   #append any extra days.
                     date_arr.append(date)
 
-    #sort day arr
-    #date_arr = sorted(date_arr)
-    #don't need to sort array here
-
     # Driver loop - based off of the days the user has entered as a CMD line argument
     for day in date_arr:
         PATH_TO_IMAGES_DIR = pathlib.Path('/raid/AoT/sage/000048B02D15BC7D/bottom/'+ day + '/')
@@ -539,15 +539,12 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 file_name = os.path.basename(im)
                 var_date_time = file_name[:len(file_name)-4].split("T")
                 var_date_str, var_time_str = var_date_time[0], var_date_time[1]
-                #print(var_date_str)
-                # print("printing var date str: ", var_date_str, " -> end of var date str")
                 var_time_str = var_time_str.replace('+0000','')
-                var_time_object = datetime.strptime(var_time_str, "%H:%M:%S")
-                var_date_object = datetime.strptime(var_date_str, "%Y-%m-%d")
+                var_date_object = datetime.strptime(var_date_str + " " + var_time_str, "%Y-%m-%d %H:%M:%S")
                 formatted = "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year)
                 file_name = file_name.replace('.jpg','')
                 # Checking for valid hours we use
-                if hour_min <= var_time_object.hour <= hour_max: 
+                if hour_min <= var_date_object.hour <= hour_max: 
                     xml_file = "/raid/AoT/image_label_xmls/" + formatted + "/"+file_name+".xml"
                     print(xml_file)
                     if not os.path.isdir('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str): # adds day to directory
@@ -667,7 +664,10 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             # Saves file with writing to the path - ALL .JPGS NOW STORED IN CROSSWALK DETECTIONS
                             cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/" + file_name + ".jpg", img_new)
                             #print("\n\n") 
-                        else:
+                        else:   #no person in the image
+                            if not emptyImage: 
+                                cv2.imwrite('/raid/AoT/image_label_xmls/crosswalk_detections/' + var_date_str + "/empty_image.jpg", cv2.imread(str(im)))
+                                emptyImage = True
                             second_count += 1
                             frame_queue, person_pos =update_person_frame(frame_id,frame_queue, person_pos, 
                                                                             dict_person_crossed_the_road,
@@ -678,10 +678,8 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 print("Exception thrown:", str(e))
                 continue
 
-    #plot = True
-
     #DATABASE PORTION BELOW
-    #plot = True    # for db connection testing short periods of time
+    plot = True    # for db connection testing short periods of time
     if plot: #plot is set to true or false from plot_object_detection.py depending on the hour has changed or not
         import server_info
         
@@ -693,13 +691,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
             return
         
         cursor = connection.cursor(buffered = True, dictionary = True)
-        #most_recent_date = cursor.execute("select DATE from Frame ORDER BY DATE DESC LIMIT 1;")
-        #date = str(most_recent_date.fetchone())
-        #date = date + "+0000"
-
-        #if( date == new_file_path ):
-            #print("Date already exists")
-            #return                      #return if date already exists ( for now )
 
         latest_id = 0                   #get most recent id in data
         cursor.execute(f"SELECT PERMAID FROM Person ORDER BY PERMAID DESC LIMIT 1;")
@@ -734,7 +725,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 coord = person_pos[key][i-1]        #get the coordinates of the current frame in array
                 timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
                 timestamp = str(timestamp.replace('+0000', ''))
-                cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (%s,%s,%s,%s)", 
+                cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (%s,%s,%s,%s)",
                                 (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
                 cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (%s,%s)", (int(latest_id+key), timestamp) )
 
