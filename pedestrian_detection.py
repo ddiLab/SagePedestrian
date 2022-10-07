@@ -704,30 +704,39 @@ def main(interval = -1, date = None, plot = False, initial=True):
             else:
                 print("Database empty")     #temporary
 
-        #insert values into person
-        for key, value in person_pos.items():
-            road = 1 if key in dict_person_crossed_the_road else 0       #set road and crosswalk flags in the cords csv file
-            crosswalk = 1 if key in dict_person_use_the_crosswalk else 0
-            east = 0 if (value[0][1] - value[-1][1] >= 0) else 1
-            north = 1 if (value[0][0] - value[-1][0] < 0) else 0
-            cursor.execute("INSERT INTO Person (PERMAID, DAYID, USECROSSWALK, USEROAD, NS, EW) VALUES (%s,%s,%s,%s,%s,%s)", (int(latest_id+key), key, crosswalk, road, north, east))
+        try:
+            #insert values into person
+            for key, value in person_pos.items():
+                road = 1 if key in dict_person_crossed_the_road else 0       #set road and crosswalk flags in the cords csv file
+                crosswalk = 1 if key in dict_person_use_the_crosswalk else 0
+                east = 0 if (value[0][1] - value[-1][1] >= 0) else 1
+                north = 1 if (value[0][0] - value[-1][0] < 0) else 0
+                cursor.execute("INSERT INTO Person (PERMAID, DAYID, USECROSSWALK, USEROAD, NS, EW) VALUES (%s,%s,%s,%s,%s,%s)", (int(latest_id+key), key, crosswalk, road, north, east))
+        except:
+            print("Primary key probably exists.")
 
-        #Insert values into Frame
-        for key, value in dict_frame_time_stamp.items():
-            new_date = value[0] + "T" + value[1].replace('+0000','')
-            path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
-            cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (%s,%s,%s)", (str(new_date), str(path), int(key)))
+        try:
+            #Insert values into Frame
+            for key, value in dict_frame_time_stamp.items():
+                new_date = value[0] + "T" + value[1].replace('+0000','')
+                path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
+                cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (%s,%s,%s)", (str(new_date), str(path), int(key)))
+        except:
+            print("Primary key moment")
 
-        #insert values into Coordinate and Contains tables.
-        for key, frame_id_array in dict_person_assigned_number_frames.items():
-            for i in range(1, len(frame_id_array)): #frame_id in frame_id_array: #loop through each frame
-                frame_id = frame_id_array[i]        #use indicies to skip first frame in dictionary. CSV File has extra frame at start, but person_cords csv has # of frames - 1
-                coord = person_pos[key][i-1]        #get the coordinates of the current frame in array
-                timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
-                timestamp = str(timestamp.replace('+0000', ''))
-                cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (%s,%s,%s,%s)",
-                                (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
-                cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (%s,%s)", (int(latest_id+key), timestamp) )
+        try:
+            #insert values into Coordinate and Contains tables.
+            for key, frame_id_array in dict_person_assigned_number_frames.items():
+                for i in range(1, len(frame_id_array)): #frame_id in frame_id_array: #loop through each frame
+                    frame_id = frame_id_array[i]        #use indicies to skip first frame in dictionary. CSV File has extra frame at start, but person_cords csv has # of frames - 1
+                    coord = person_pos[key][i-1]        #get the coordinates of the current frame in array
+                    timestamp = ('T'.join(dict_frame_time_stamp[frame_id])) #get timestamp using current frame id
+                    timestamp = str(timestamp.replace('+0000', ''))
+                    cursor.execute("INSERT INTO Coordinate (PERMAID, DATE, XCOORD, YCOORD) VALUES (%s,%s,%s,%s)",
+                                    (int(latest_id+key), timestamp, int(coord[0]), int(coord[1]) ))
+                    cursor.execute("INSERT INTO Contains (PERMAID, DATE) VALUES (%s,%s)", (int(latest_id+key), timestamp) )
+        except:
+            print("Primary key????")
 
         #commit changes to database
         connection.commit()
