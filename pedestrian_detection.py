@@ -424,7 +424,7 @@ def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
     for cords in person_cords:
         if crosswalk_polygon.contains(Point(cords)):
             count+=1
-    if count>3:
+    if count>2:
         return True
     return False
 
@@ -687,7 +687,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
         
         #can't connect to db
         if connection is None:
-            print("Could not connect to database. Try again idiot")
+            print("Could not connect to database.")
             return
         
         cursor = connection.cursor(buffered = True, dictionary = True)
@@ -715,14 +715,12 @@ def main(interval = -1, date = None, plot = False, initial=True):
         except:
             print("Primary key probably exists.")
 
-        try:
-            #Insert values into Frame
-            for key, value in dict_frame_time_stamp.items():
-                new_date = value[0] + "T" + value[1].replace('+0000','')
-                path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
-                cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (%s,%s,%s)", (str(new_date), str(path), int(key)))
-        except:
-            print("Primary key moment")
+        #Insert values into Frame, we probably don't want to insert new people
+        #if frame time already exists
+        for key, value in dict_frame_time_stamp.items():
+            new_date = value[0] + "T" + value[1].replace('+0000','')
+            path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
+            cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (%s,%s,%s)", (str(new_date), str(path), int(key)))
 
         try:
             #insert values into Coordinate and Contains tables.
