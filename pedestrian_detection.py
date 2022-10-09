@@ -23,11 +23,14 @@ extractor = FeatureExtractor(model_name='osnet_x1_0', model_path='./model.pth.ta
 
 def load_crosswalk_corrdinates():
     import json
-    with open('./crosswalk_coordinates.json') as xwalk:
-        contents = xwalk.read()
-        coordinates = json.loads(contents)
-        return np.array(coordinates)
-    return np.array([[0,0], [0,0], [0,0], [0,0]])   #default
+    try:
+        with open('./crosswalk_coordinates.json') as xwalk:
+            contents = xwalk.read()
+            coordinates = json.loads(contents)
+            return np.array(coordinates)
+    except:
+        print("File does not exist! Returning origin.")
+        return np.array([[0,0], [0,0], [0,0], [0,0]])   #default
 
 # Gets the crosswalk coordinates (the coordinates are slightly bigger than the exact coordinates from corner to corner)
 def get_crosswalk_coordinates():
