@@ -380,7 +380,7 @@ def did_person_cross_the_road(assigned_number, person_pos):
                 south_side = True
             if (north_road_slope*cords[0])+cords[1]-north_ycoord > 0 and (south_road_slope*cords[0])+cords[1]-south_ycoord < 0: #use middle of sidewalk
                 arr.append(cords)
-    if len(arr) > 1:
+    if len(arr) > 0:
         distance_covered = float(Point(arr[0]).distance(Point(arr[-1])))
         total_distance = float(Point(center_top).distance(Point(center_bottom)))
         pct = distance_covered / total_distance
@@ -544,7 +544,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 var_date_str, var_time_str = var_date_time[0], var_date_time[1]
                 var_time_str = var_time_str.replace('+0000','')
                 var_date_object = datetime.strptime(var_date_str + " " + var_time_str, "%Y-%m-%d %H:%M:%S")
-                formatted = "{:02d}".format(var_date_object.month) + "-" + "{:02d}".format(var_date_object.day) + "-" + str(var_date_object.year)
+                formatted = "-".join(["{:02d}".format(var_date_object.month), "{:02d}".format(var_date_object.day), str(var_date_object.year)])
                 file_name = file_name.replace('.jpg','')
                 # Checking for valid hours we use
                 if hour_min <= var_date_object.hour <= hour_max: 
@@ -573,7 +573,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                             # person : xmin, xmax, ymin, ymax of person                          
                             for person in person_coordinates:
                                 frame_counter += 1
-                                if person[3] < 1700 and abs((person[1]-person[3]) * (person[0]-person[2])) > 1750: # check to see if below 1700 y line, bounding box size > 1750
+                                if abs((person[1]-person[3]) * (person[0]-person[2])) > 1750: # check to see if below 1700 y line, bounding box size > 1750
                                     # for increased accuracy can do Person[0] > 1900, ignores right half of screen which can cause massive re-id errors
                                     if frame_id not in dict_frame_time_stamp:
                                         dict_frame_time_stamp[frame_id] = var_date_time
@@ -707,6 +707,16 @@ def main(interval = -1, date = None, plot = False, initial=True):
             else:
                 print("Database empty")     #temporary
 
+        #check if day exists.
+        #if it does, we want to remove any data associated with it before inserting into db
+
+        #Insert values into Frame, we probably don't want to insert new people
+        #if frame time already exists
+        for key, value in dict_frame_time_stamp.items():
+            new_date = value[0] + "T" + value[1].replace('+0000','')
+            path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
+            cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (%s,%s,%s)", (str(new_date), str(path), int(key)))
+
         try:
             #insert values into person
             for key, value in person_pos.items():
@@ -717,13 +727,6 @@ def main(interval = -1, date = None, plot = False, initial=True):
                 cursor.execute("INSERT INTO Person (PERMAID, DAYID, USECROSSWALK, USEROAD, NS, EW) VALUES (%s,%s,%s,%s,%s,%s)", (int(latest_id+key), key, crosswalk, road, north, east))
         except:
             print("Primary key probably exists.")
-
-        #Insert values into Frame, we probably don't want to insert new people
-        #if frame time already exists
-        for key, value in dict_frame_time_stamp.items():
-            new_date = value[0] + "T" + value[1].replace('+0000','')
-            path = "/raid/AoT/image_label_xmls/crosswalk_detections/" + var_date_str + "/" + new_date + "+0000.jpg"
-            cursor.execute("INSERT INTO Frame (DATE, PATH, FRAMEID) VALUES (%s,%s,%s)", (str(new_date), str(path), int(key)))
 
         try:
             #insert values into Coordinate and Contains tables.
