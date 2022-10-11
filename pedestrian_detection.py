@@ -657,7 +657,7 @@ def main(interval = -1, date = None, plot = False, initial=True):
                                                 50, 400), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239), 6)   
 
                             image_date = str(var_date_object).replace("00:00:00","")
-                            image_date = image_date + str(var_time_str)
+                            image_date = image_date
                             cv2.putText(img_new, str(image_date)  , (50,1730), cv2.FONT_HERSHEY_SIMPLEX, 3, (0,255,239),6)
 
                             # used for video writer
