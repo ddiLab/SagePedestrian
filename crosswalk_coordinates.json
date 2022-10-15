@@ -1,0 +1,24 @@
+{
+  "nroad_slope": 0.037109375,
+  "nroad_y_intercept": 830,
+  "sroad_slope": 0.0882352941176,
+  "sroad_y_intercept": 1025,
+  "coordinates": [
+    [
+      514,
+      796
+    ],
+    [
+      721,
+      783
+    ],
+    [
+      1095,
+      934
+    ],
+    [
+      763,
+      992
+    ]
+  ]
+}

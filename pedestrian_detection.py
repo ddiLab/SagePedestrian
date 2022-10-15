@@ -27,10 +27,16 @@ def load_crosswalk_corrdinates():
         with open('./crosswalk_coordinates.json') as xwalk:
             contents = xwalk.read()
             coordinates = json.loads(contents)
-            return np.array(coordinates)
+            return ( 
+                coordinates["nroad_slope"], 
+                coordinates["nroad_y_intercept"], 
+                coordinates["sroad_slope"], 
+                coordinates["sroad_y_intercept"], 
+                np.array(coordinates["coordinates"])
+            )
     except:
         print("File does not exist! Returning origin.")
-        return np.array([[0,0], [0,0], [0,0], [0,0]])   #default
+        return 0, 0, 0, 0, np.array([[0,0], [0,0], [0,0], [0,0]])   #default
 
 # Gets the crosswalk coordinates (the coordinates are slightly bigger than the exact coordinates from corner to corner)
 def get_crosswalk_coordinates():
@@ -149,18 +155,18 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
 #    print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):
         if current_person.person_id == max_person_id:
-            within_range = True
-            found = False
+            #within_range = True
+            #found = False
             #I will admit this is pretty bad
-            for frame in frame_queue:
-                for person in frame.person_records:
-                    if person.assigned_number == best_match_number:
-                        found = True
-                        within_range = is_in_range(person.center_cords, current_person.center_cords)
-                        break
-                if found: break
+            #for frame in frame_queue:
+                #for person in frame.person_records:
+                    #if person.assigned_number == best_match_number:
+                        #found = True
+                        #within_range = is_in_range(person.center_cords, current_person.center_cords)
+                        #break
+                #if found: break
 #            print("Within range? ", within_range)
-            if max_score > 0.6 and within_range:
+            if max_score > 0.6: #and within_range:
 #                print(current_frame_persons[current_id].assigned_number, "CASE 2")``
                 current_frame_persons[current_id].assigned_number = best_match_number
 #                print("Max score > 0.6, assigned number = ", best_match_number)
@@ -351,10 +357,10 @@ def is_in_range(point1, point2):
         
 # GLOBAL VARIABLES TO FIND LINES ON THE ROAD
 # Slopes found using (y2-y1)/(x2-x1) - points found by looking at road, in standard form ax^2 + bx + c = 0
-north_road_slope = 0.037109375
-north_ycoord = 830
-south_road_slope = 0.0882352941176
-south_ycoord = 1025
+#north_road_slope = 0.037109375
+#north_ycoord = 830
+#south_road_slope = 0.0882352941176
+#south_ycoord = 1025
 
 def did_person_cross_the_road(assigned_number, person_pos):
     #print("DID PERSON CROSS THE ROAD")
@@ -474,7 +480,8 @@ def main(interval = -1, date = None, plot = False, initial=True):
     date_arr=[]    # Main for loop array
 
     global dict_person_assigned_number_frames,dict_person_crossed_the_road,dict_person_use_the_crosswalk,dict_frame_time_stamp
-    global xwalk_coords
+    #crosswalk coordinates + lines
+    global xwalk_coords, north_road_slope, north_ycoord, south_road_slope, south_ycoord
 
     max_second_count = 5
     second_count = 0
@@ -493,7 +500,8 @@ def main(interval = -1, date = None, plot = False, initial=True):
 
     frame_record = recordtype("frame_record", "frame_id person_records")
     person_record = recordtype("person_record", "person_id frame_id feature assigned_number center_cords bottom_cords")
-    xwalk_coords = load_crosswalk_corrdinates()
+    north_road_slope, north_ycoord, south_road_slope, south_ycoord, xwalk_coords = load_crosswalk_corrdinates()
+    #print(north_road_slope, north_ycoord, south_road_slope, south_ycoord)
     pts = xwalk_coords# Uses exact crosswalk coordinates as a highlighter for visual aid
 
     hour_min = 13   #default hour range
