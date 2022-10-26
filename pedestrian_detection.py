@@ -155,18 +155,18 @@ def update_current_frame_assignments(current_frame_persons, current_frame_sim_sc
 #    print("Third", current_frame_sim_score)
     for current_id, current_person in enumerate(current_frame_persons):
         if current_person.person_id == max_person_id:
-            #within_range = True
-            #found = False
+            within_range = True
+            found = False
             #I will admit this is pretty bad
-            #for frame in frame_queue:
-                #for person in frame.person_records:
-                    #if person.assigned_number == best_match_number:
-                        #found = True
-                        #within_range = is_in_range(person.center_cords, current_person.center_cords)
-                        #break
-                #if found: break
+            for frame in frame_queue:
+                for person in frame.person_records:
+                    if person.assigned_number == best_match_number:
+                        found = True
+                        within_range = is_in_range(person.center_cords, current_person.center_cords)
+                        break
+                if found: break
 #            print("Within range? ", within_range)
-            if max_score > 0.6: #and within_range:
+            if max_score > 0.6 and within_range:
 #                print(current_frame_persons[current_id].assigned_number, "CASE 2")``
                 current_frame_persons[current_id].assigned_number = best_match_number
 #                print("Max score > 0.6, assigned number = ", best_match_number)
