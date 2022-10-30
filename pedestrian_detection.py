@@ -38,16 +38,6 @@ def load_crosswalk_corrdinates():
         print("File does not exist! Returning origin.")
         return 0, 0, 0, 0, np.array([[0,0], [0,0], [0,0], [0,0]])   #default
 
-# Gets the crosswalk coordinates (the coordinates are slightly bigger than the exact coordinates from corner to corner)
-def get_crosswalk_coordinates():
-    coordinates = [[514, 796], [721, 783], [1095, 934], [763, 992]]
-    return np.array(coordinates)
-
-# Gets the exact crosswalk coordinates (used for highlighting later on in the script, not the actual detections)
-def get_highlightable_coordinates():
-    coordinates = [[524, 802], [667, 790], [1023, 941], [758, 962]] # for highlighting the crosswalk
-    return np.array(coordinates)
-
 # Parse the xml file
 def parse_xml(xml_file):
     final_arr=[]
@@ -395,32 +385,6 @@ def did_person_cross_the_road(assigned_number, person_pos):
         if (north_side and south_side) or (north_side and pct>0.8) or (south_side and pct>0.8):
             return True
     return False
-
-def angle_between_crosswalk_and_trajectory(person_pos):
-    #print("ANGLE BETWEEN CROSSWALK AND TRAJECTORY")
-    #print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-    import math
-    #from sympy import Point, Line, pi
-
-    #get crosswalk coords
-    crosswalk_coords = xwalk_coords
-    #get center of top of crosswalk
-    center_top = middle_between_points(crosswalk_coords[0], crosswalk_coords[1])
-    #get center of bottom
-    center_bottom = middle_between_points(crosswalk_coords[2], crosswalk_coords[3])
-
-    ne=sympy.Line(center_top,center_bottom)
-    arr=[]
-    angle=[]
-    for cords in person_pos:
-        if (north_road_slope*cords[0])+cords[1]-north_ycoord > 0 and (south_road_slope*cords[0])+cords[1]-south_ycoord < 0:
-            arr.append(cords)
-    for pair_id, val in enumerate(arr):
-        if pair_id < len(arr)-1:
-            angle.append(math.degrees(sympy.Line((arr[pair_id][0],arr[pair_id][1]), (arr[pair_id+1][0],arr[pair_id+1][1])).
-                                  angle_between(ne)))
-    # print(angle)
-    return angle
 
 #checks if person used crosswalk within a certain polygon
 def did_person_use_the_crosswalk(person_cords, crosswalk_cords):
