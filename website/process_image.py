@@ -1,7 +1,7 @@
 import numpy as np
 import json
 import sys
-sys.path.insert(0, '/home/wesley/')
+sys.path.insert(0, '/home/justind/')
 import server_info
 
 def pi_chart_per_hour(db_cursor, date):

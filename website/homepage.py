@@ -1,12 +1,12 @@
+#!/bin/bash
 import sys
+import server_info
+
 import json
 from SageBokeh import bokeh_heat_map
 from SageBokeh import bokeh_double_line_graph
 from SageBokeh import bokeh_double_scatter_plot
 from SageBokeh import bokeh_direction_scatter_plot
-
-sys.path.insert(0, '/home/wesley/')
-import server_info
 
 def most_recent_day():
     #connect to db
@@ -47,13 +47,15 @@ def most_recent_day():
                     path_dict[perma_id] = []
                 path_dict[perma_id].append(coordinate)
 
-    print(new_date)
+    print(new_date) #output[0]
     print(json.dumps(path_dict)) #print the path dictionary so php can retrieve it
+    #with open('graphs.txt', 'r') as graphs:
+        #print(graphs.read())
     #create charts
-    bokeh_heat_map(db_cursor)
-    bokeh_double_line_graph(db_cursor)
-    bokeh_double_scatter_plot(db_cursor)
-    bokeh_direction_scatter_plot(db_cursor)
+    #bokeh_heat_map(db_cursor)
+    #bokeh_double_line_graph(db_cursor)
+    #bokeh_double_scatter_plot(db_cursor)
+    #bokeh_direction_scatter_plot(db_cursor)
 
     db_cursor.close()
     connection.close()

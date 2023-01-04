@@ -137,6 +137,5 @@ function printDictionary(traj) {
 //updates the trajectories array
 function updateTrajectoriesList() {
     var result = JSON.parse(traj);
-    console.log(traj);
     return result;    //parse traj from the php file
 }

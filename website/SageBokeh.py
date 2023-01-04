@@ -95,7 +95,7 @@ def bokeh_double_line_graph(db_cursor):
     #graph creation
     #tools
     TOOLS = "pan,box_zoom,reset,wheel_zoom"
-    fig = figure(x_range = days, y_range=Range1d(0, np.max(road_counts), bounds="auto"), plot_width = 1024, plot_height = 600, tools=TOOLS, toolbar_location="below")
+    fig = figure(x_range = days, y_range=Range1d(0, np.max(road_counts), bounds="auto"), width = 1024, height = 600, tools=TOOLS, toolbar_location="below")
     fig.line(days, xwalk_counts, line_width=2, color="red", legend_label="Crosswalk")
     fig.line(days, road_counts, line_width=2, color="blue", legend_label="Road")
     fig.xaxis.major_label_orientation = pi/4 # puts dates in a / angle 
@@ -152,8 +152,8 @@ def bokeh_double_scatter_plot(db_cursor):
     #create graph
     TOOLS = "pan,box_zoom,reset,wheel_zoom"
     fig = figure(x_range = days, y_range=Range1d(0, np.max(road_counts)+10, bounds="auto"), plot_width = 1024, plot_height = 600, tools=TOOLS, toolbar_location="below")
-    fig.scatter(days, xwalk_counts, color="red", legend_label="Crosswalk")
-    fig.scatter(days, road_counts, color="blue", legend_label="Road")
+    fig.line(days, xwalk_counts, line_width=2, color="red", legend_label="Crosswalk")
+    fig.line(days, road_counts, line_width=2, color="blue", legend_label="Road")
     fig.xaxis.major_label_orientation = pi/4 # puts dates in a / angle 
     fig.yaxis.axis_label = "Uses"
     fig.xaxis.axis_label = "Day"
@@ -381,7 +381,7 @@ def bokeh_direction_scatter_plot(db_cursor):
 
     #create graph
     TOOLS = "pan,box_zoom,reset,wheel_zoom"
-    fig = figure(x_range = days, y_range=Range1d(0, max(np.max(east_counts), np.max(west_counts))+10, bounds="auto"), plot_width = 1024, plot_height = 600, tools=TOOLS, toolbar_location="below")
+    fig = figure(x_range = days, y_range=Range1d(0, max(np.max(east_counts), np.max(west_counts))+10, bounds="auto"), width = 1024, height = 600, tools=TOOLS, toolbar_location="below")
     fig.scatter(days, east_counts, color="red", legend_label="East")
     fig.scatter(days, west_counts, color="blue", legend_label="West")
     fig.xaxis.major_label_orientation = pi/4 # puts dates at a 45 degree angle 

@@ -2,13 +2,13 @@
 <html lang="en">
     <head>
         <title>Crosswalk Detection</title>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-2.4.3.min.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.3.min.js"></script>
-        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-2.4.3.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-3.0.2.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.0.2.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-api-3.0.2.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.0.2.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.0.2.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.0.2.min.js"></script>
+        <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-3.0.2.min.js"></script>
         <script type="text/javascript">
             Bokeh.set_log_level("info");
         </script>
@@ -68,14 +68,14 @@
     </header>
     <body class="body1">
         <br><br><br><br><br><br><br><br>
-        
             <?php
                 $date = date('Y-m-d');  //format the date
                 $date = date('Y-m-d',(strtotime ( '-1 day' , strtotime ( $date) ) ));   //subtract 1 from day
                 //echo '<div class="image-caption">';
-                $command = "python3 ./homepage.py";
+                $command = "python3 /data/pedestrian/niu/homepage.py";
                 $output =null;
                 $retval =null;
+                //echo phpinfo();
                 exec($command,$output,$retval);
                 echo "<p class='caption'>The following trajectories are the crosswalk detections for $output[0] between 8am - 5pm.</p>";
                 echo '<br>';
@@ -92,25 +92,31 @@
                     echo "<script type='text/javascript'>var traj = null; setUpMap(); </script>";
                     //echo "<p class='caption'>Missing data for $date</p>";
                 }
+
+                //open graph data
+                $file = fopen("graphs.txt", "r") or die("Cannot open graphs.txt");
+                $graphs = fread($file, filesize("graphs.txt"));
+
                 //this REALLY should be a loop. Please
                 echo "<script type='text/javascript'>
-                    var item = " . json_encode(($output[2])) . ";
-                    var line = " . json_encode(($output[3])) . ";
-                    var sctr = " . json_encode(($output[4])) . ";
-                    var drgh = " . json_encode(($output[5])) . ";
-                    console.log(item, line, sctr, drgh);
-                    item = JSON.parse(item);
-                    line = JSON.parse(line);
-                    sctr = JSON.parse(sctr);
-                    drgh = JSON.parse(drgh);
-                    Bokeh.embed.embed_item(item);
-                    Bokeh.embed.embed_item(line);
-                    Bokeh.embed.embed_item(sctr);
-                    Bokeh.embed.embed_item(drgh);
+                    var graphs = " . json_encode($graphs) . "
+                    graphs = graphs.split('***');
+                    //var item = " . json_encode(($output[2])) . ";
+                    //var line = " . json_encode(($output[2])) . ";
+                    //var drgh = " . json_encode(($output[5])) . ";
+                    //console.log(item, line, sctr, drgh);
+                    var item = JSON.parse(graphs[0]);
+                    var line = JSON.parse(graphs[1]);
+                    var drgh = JSON.parse(graphs[2]);
+                    console.log(item);
+                    console.log(line);
+                    console.log(drgh);
+                    Bokeh.embed.embed_item(item, 'heatmap');
+                    Bokeh.embed.embed_item(line, 'doublelinegraph');
+                    Bokeh.embed.embed_item(drgh, 'directionplot');
                 </script>";
                 echo "</div>";
             ?>
-       
         <br><br>
         <hr class="solid">
         <br><br>
